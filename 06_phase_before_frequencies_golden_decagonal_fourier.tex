@@ -1,0 +1,715 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!60!black,
+    citecolor=blue!60!black,
+    urlcolor=blue!60!black,
+    pdftitle={Phase Before Frequencies},
+    pdfauthor={Vinicius Santos}
+}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{remark}[definition]{Remark}
+\newtheorem{question}[definition]{Question}
+
+\newcommand{\B}{\mathsf{B}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Nm}{\operatorname{N}}
+\newcommand{\Sp}{\operatorname{Sp}}
+\newcommand{\ord}{\operatorname{ord}}
+\newcommand{\Gal}{\operatorname{Gal}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\ph}{\varphi}
+\newcommand{\ps}{\psi}
+\newcommand{\Z}{\mathbb{Z}}
+\newcommand{\Q}{\mathbb{Q}}
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\C}{\mathbb{C}}
+\newcommand{\RR}{\mathcal R_\ph}
+\newcommand{\zz}{\zeta}
+\newcommand{\widef}{\widehat f}
+\newcommand{\wideg}{\widehat g}
+\newcommand{\sig}{\sigma}
+
+\title{Phase Before Frequencies\\
+\large A Golden Decagonal Fourier Transform}
+\author{Vinicius Santos\\
+\small Exploratory draft}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+The companion manuscripts in this series use a recurring rule: do not force a classical operation into the scalar layer when it naturally belongs to a richer sort.  Addition appears as trace projection, division as rate localization or relation, trigonometry as norm-one phase, roots as spread lifts, and calculus as displacement factor projection.  This note applies the same discipline to finite Fourier analysis.
+
+The construction is not a new discrete Fourier transform.  The standard Fourier theory of the cyclic group $\Z/10\Z$ supplies character orthogonality, inversion, and the convolution theorem.  The golden-specific input is the cyclotomic coincidence
+\[
+    \Q(\zz_{10})^+=\Q(\sqrt5)=\Q(\ph),
+\]
+and more sharply
+\[
+    \zz_{10}+\zz_{10}^{-1}=\ph.
+\]
+Thus the decagonal phase is the natural circular lift of the golden trace.  Writing $U=\zz_{10}$, the phase relation is
+\[
+    U^2-\ph U+1=0,
+\]
+so the spectral ring is the rank-two golden phase ring
+\[
+    \RR=\Z[\ph][U]/(U^2-\ph U+1).
+\]
+The forward transform of a golden signal $f\in\Z[\ph]^{10}$ is phase-valued:
+\[
+    \widehat f_m=\sum_{k=0}^9 f_kU^{km}\in\RR.
+\]
+It is not generally a scalar in $\Z[\ph]$.
+
+The inverse transform requires the fixed denominator $10$, and is therefore rate-native rather than scalar-native.  Cyclic convolution is diagonalized without changing the classical statement:
+\[
+    \widehat{f*g}_m=\widehat f_m\widehat g_m,
+\]
+where the product is computed in $\RR$.  The golden twist appears not in the convolution theorem but in the phase-ring reduction rule
+\[
+    U^2=\ph U-1.
+\]
+Finally, phase conjugation decomposes the ten spectral slots into two scalar modes and four phase-conjugate pairs:
+\[
+    2+4\times 2=10.
+\]
+This is the finite Fourier analogue of the series' guiding slogan: phase first, trace second, angle later.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction: Fourier without angles}
+
+In \emph{Shadow Trigonometry}, trigonometric structure was not introduced through angles, radians, or transcendental exponentials.  It began with a phase object $U$ satisfying
+\[
+    U+U^{-1}=\ph.
+\]
+Equivalently,
+\[
+    U^2-\ph U+1=0.
+\]
+From this phase-lift relation one obtains
+\[
+    U^5=-1,
+    \qquad
+    U^{10}=1.
+\]
+Thus the decagonal clock appears before any analytic angle coordinate is chosen.
+
+Classical finite Fourier analysis is usually written using complex exponentials
+\[
+    e^{2\pi i km/N}.
+\]
+The present note rewrites the $N=10$ case using the phase object already forced by the golden trace relation.  The result is a Fourier transform that is exact, algebraic, and phase-valued.  The point is not to discover a new DFT.  The point is to locate the ordinary cyclic Fourier transform inside the layer architecture developed across the series:
+\[
+    \text{phase first, trace second, angle later.}
+\]
+
+The central warning is just as important as the construction.  The spectrum is not generally valued in $\Z[\ph]$.  It is valued in the phase ring
+\[
+    \RR=\Z[\ph][U]/(U^2-\ph U+1).
+\]
+Scalar cosine and sine shadows are later projections from this phase-valued spectrum.  The inverse transform also requires a fixed averaging denominator $10$, and therefore belongs to the rate/localization layer rather than the pure scalar layer.
+
+\section{What is golden, what is standard}
+
+Standard finite-group Fourier theory supplies the following facts: the orthogonality of characters, the inverse transform, and the convolution theorem.  These are classical statements about the group algebra of the cyclic group $\Z/10\Z$; see, for example, standard accounts of finite Fourier analysis and representation theory of finite abelian groups \cite{TerrasFourier,SerreRepresentations}.
+
+The golden-specific input is narrower and more precise.  It is the identity
+\[
+    \zz_{10}+\zz_{10}^{-1}=\ph,
+\]
+where $\zz_{10}=e^{\pi i/5}$ is a primitive tenth root of unity.  Thus the primitive decagonal phase is a quadratic lift over the golden field.  If we write $U=\zz_{10}$, then
+\[
+    U+U^{-1}=\ph
+\]
+is equivalent to
+\[
+    U^2-\ph U+1=0.
+\]
+Consequently, the phase ring is not an arbitrary complex coordinate system.  It is the quadratic phase extension
+\[
+    \RR=\Z[\ph][U]/(U^2-\ph U+1).
+\]
+Every spectral component has a unique normal form
+\[
+    A+BU,
+    \qquad A,B\in\Z[\ph].
+\]
+
+This is the honest scope of the paper.  Orthogonality, inversion, and convolution are standard Fourier facts.  What is golden is the phase-ring placement: the tenth cyclotomic phase is exactly the circular lift whose trace is $\ph$, and its arithmetic reduces by
+\[
+    U^2=\ph U-1.
+\]
+
+\section{Why the clock is decagonal}
+
+The choice of a ten-point clock is not decorative.  It is forced by the trace identity that anchors the phase layer.
+
+For $n\ge3$,
+\[
+    [\Q(\zz_n)^+:\Q]=\frac{\phi(n)}2,
+\]
+where $\Q(\zz_n)^+$ denotes the maximal real subfield of the cyclotomic field.  To obtain a quadratic real cyclotomic field, one must have
+\[
+    \phi(n)=4.
+\]
+The solutions are
+\[
+    n=5,8,10,12.
+\]
+Their real cyclotomic fields are
+\[
+    \Q(\zz_5)^+=\Q(\sqrt5),
+\]
+\[
+    \Q(\zz_8)^+=\Q(\sqrt2),
+\]
+\[
+    \Q(\zz_{10})^+=\Q(\sqrt5),
+\]
+\[
+    \Q(\zz_{12})^+=\Q(\sqrt3).
+\]
+Thus the only cyclotomic real fields equal to the golden field are $n=5$ and $n=10$.
+
+The distinction between these two golden cases matters.  For a primitive fifth root,
+\[
+    \zz_5+\zz_5^{-1}=2\cos(2\pi/5)=\ph^{-1}.
+\]
+For a primitive tenth root,
+\[
+    \zz_{10}+\zz_{10}^{-1}=2\cos(\pi/5)=\ph.
+\]
+Therefore the decagonal phase is the one whose trace is $\ph$ itself.  It is the native home of the defining relation
+\[
+    U+U^{-1}=\ph.
+\]
+The pentagon remains present as the quotient by sign: $U^5=-1$ and $U^{10}=1$.  But the transform constructed here is decagonal.
+
+\begin{proposition}[The golden cyclotomic layers]
+For $n\ge3$, the equality
+\[
+    \Q(\zz_n)^+=\Q(\sqrt5)
+\]
+holds exactly for $n=5$ and $n=10$.  Among these, $n=10$ is the case whose primitive phase trace is $\ph$ rather than $\ph^{-1}$.
+\end{proposition}
+
+\begin{proof}
+The degree of $\Q(\zz_n)^+$ over $\Q$ is $\phi(n)/2$.  If it equals the quadratic field $\Q(\sqrt5)$, then $\phi(n)=4$.  The positive integers $n\ge3$ satisfying $\phi(n)=4$ are $5,8,10,12$.  Directly,
+\[
+    \zz_5+\zz_5^{-1}=2\cos(2\pi/5)=\frac{\sqrt5-1}{2}=\ph^{-1},
+\]
+\[
+    \zz_8+\zz_8^{-1}=\sqrt2,
+\]
+\[
+    \zz_{10}+\zz_{10}^{-1}=2\cos(\pi/5)=\frac{1+\sqrt5}{2}=\ph,
+\]
+\[
+    \zz_{12}+\zz_{12}^{-1}=\sqrt3.
+\]
+Hence the real field is golden exactly for $n=5,10$, and the trace is $\ph$ itself for $n=10$.
+\end{proof}
+
+\section{The golden phase ring}
+
+Let
+\[
+    R=\Z[\ph].
+\]
+Define the golden phase ring by
+\[
+    \RR=R[U]/(U^2-\ph U+1).
+\]
+Inside this ring,
+\[
+    U^2=\ph U-1.
+\]
+Since the defining polynomial is monic of degree two, every element has a unique normal form
+\[
+    A+BU,
+    \qquad A,B\in R.
+\]
+Thus $\RR$ is a rank-two $R$-module.
+
+The phase involution is determined by
+\[
+    \sig(U)=U^{-1}=\ph-U.
+\]
+The last equality follows from
+\[
+    U(\ph-U)=\ph U-U^2=\ph U-(\ph U-1)=1.
+\]
+It fixes the golden scalar ring $R$.
+
+Although we write $\ph-U$ in ordinary ring notation, the native syntax should remember that this is a mixed scalar-phase shift.  In the trace-layer language of the previous manuscripts,
+\[
+    \ph-U=\Tr\langle \ph\mid \operatorname{neg}(U)\rangle.
+\]
+Thus the phase involution introduces no new primitive subtraction.  It reuses the trace-mediated addition mechanism already required by the scalar obstruction theorem.
+
+For an element $X=A+BU$, phase conjugation gives
+\[
+    \sig(X)=A+B(\ph-U)=(A+B\ph)-BU.
+\]
+
+\begin{proposition}[Phase-ring multiplication]
+Let
+\[
+    X=A+BU,
+    \qquad
+    Y=C+DU
+\]
+with $A,B,C,D\in R$.  Then
+\[
+    XY=(AC-BD)+(AD+BC+\ph BD)U.
+\]
+\end{proposition}
+
+\begin{proof}
+Compute
+\[
+    (A+BU)(C+DU)=AC+(AD+BC)U+BDU^2.
+\]
+Using $U^2=\ph U-1$ gives
+\[
+    AC-BD+(AD+BC+\ph BD)U.
+\]
+\end{proof}
+
+This is where the golden twist lives.  It will not alter the statement of the convolution theorem, but it governs every pointwise spectral product.
+
+\section{Signals as ten-slot objects}
+
+A golden signal is a ten-slot tuple
+\[
+    f=\langle f_0\mid f_1\mid\cdots\mid f_9\rangle,
+    \qquad
+    f_k\in R.
+\]
+The signal space is
+\[
+    R^{10}.
+\]
+The spectrum, however, will live in
+\[
+    \RR^{10}.
+\]
+This distinction is essential.  The transform takes scalar golden data and produces phase-valued spectral data.
+
+The ten-slot notation is consistent with the previous manuscripts: pair traces completed addition, diagonal tuples handled fixed averaging, and root/phase layers used conjugate slots.  Fourier analysis now uses a cyclic ten-slot signal object.
+
+\section{Forward transform: phase-valued spectrum}
+
+\begin{definition}[Golden decagonal Fourier transform]
+For $f\in R^{10}$, define
+\[
+    \widehat f_m=\sum_{k=0}^{9} f_kU^{km},
+    \qquad
+    m=0,1,\ldots,9.
+\]
+Equivalently,
+\[
+    \widehat f_m=
+    \Tr_{10}\langle
+        f_0U^0\mid f_1U^m\mid f_2U^{2m}\mid\cdots\mid f_9U^{9m}
+    \rangle.
+\]
+\end{definition}
+
+Each component satisfies
+\[
+    \widehat f_m\in\RR.
+\]
+In normal form,
+\[
+    \widehat f_m=A_m+B_mU,
+    \qquad
+    A_m,B_m\in R.
+\]
+Thus the spectrum is phase-valued.  It should not be collapsed to a scalar golden integer unless a trace/spread projection is explicitly applied.
+
+\section{Orthogonality of the decagonal clock}
+
+Define
+\[
+    K(j)=\sum_{k=0}^{9}U^{kj}.
+\]
+
+\begin{proposition}[Phase orthogonality]
+For every integer $j$,
+\[
+    K(j)=
+    \begin{cases}
+        10,&j\equiv0\pmod{10},\\
+        0,&j\not\equiv0\pmod{10}.
+    \end{cases}
+\]
+\end{proposition}
+
+\begin{proof}
+If $j\equiv0\pmod{10}$, then every term is $1$, so $K(j)=10$.
+
+If $j\not\equiv0\pmod{10}$, then $U^j\ne1$ while $(U^j)^{10}=1$.  Therefore
+\[
+    (1-U^j)K(j)=1-U^{10j}=0.
+\]
+Since $\RR$ embeds into the cyclotomic field $\Q(\zz_{10})$ and is therefore an integral domain, and since $1-U^j\ne0$, it follows that $K(j)=0$.
+\end{proof}
+
+This is ordinary character orthogonality expressed through the golden phase object.
+
+\section{Inverse transform and the rate layer}
+
+Using orthogonality,
+\begin{align*}
+    \sum_{m=0}^{9}\widehat f_mU^{-km}
+    &=\sum_{m=0}^{9}\sum_{\ell=0}^{9}f_\ell U^{\ell m}U^{-km}\\
+    &=\sum_{\ell=0}^{9}f_\ell\sum_{m=0}^{9}U^{m(\ell-k)}\\
+    &=10f_k.
+\end{align*}
+Thus reconstruction requires a fixed averaging denominator $10$.
+
+Since $1/10\notin R$, the inverse should not be written as a primitive scalar operation in the base layer.  The native inverse is the rate object
+\[
+    f_k=
+    \left[
+    \sum_{m=0}^{9}\widehat f_mU^{-km}:10
+    \right]_{S_{10}}.
+\]
+If a localized scalar coordinate is explicitly requested, this becomes
+\[
+    f_k=\frac1{10}\sum_{m=0}^{9}\widehat f_mU^{-km}.
+\]
+The former is the architecture-native statement; the latter is its localization.
+
+\section{Cyclic convolution}
+
+For $f,g\in R^{10}$, define cyclic convolution by
+\[
+    (f*g)_n=\sum_{k=0}^{9}f_kg_{n-k},
+\]
+where indices are read modulo $10$.
+
+This operation remains in $R^{10}$ because $R$ is closed under addition and multiplication.
+
+\section{The convolution theorem}
+
+\begin{theorem}[Golden decagonal convolution theorem]
+For $f,g\in R^{10}$,
+\[
+    \widehat{f*g}_m=\widehat f_m\widehat g_m,
+\]
+where the product on the right is computed in the phase ring $\RR$.
+\end{theorem}
+
+\begin{proof}
+We compute
+\begin{align*}
+    \widehat{f*g}_m
+    &=\sum_{n=0}^{9}(f*g)_nU^{mn}\\
+    &=\sum_{n=0}^{9}\sum_{k=0}^{9}f_kg_{n-k}U^{mn}.
+\end{align*}
+Let $r=n-k$ modulo $10$.  Then
+\begin{align*}
+    \widehat{f*g}_m
+    &=\sum_{k=0}^{9}\sum_{r=0}^{9}f_kg_rU^{m(k+r)}\\
+    &=\left(\sum_{k=0}^{9}f_kU^{mk}\right)
+      \left(\sum_{r=0}^{9}g_rU^{mr}\right)\\
+    &=\widehat f_m\widehat g_m.
+\end{align*}
+\end{proof}
+
+The theorem has the ordinary Fourier form.  The golden twist appears one layer lower, in the multiplication rule of $\RR$.
+
+\section{Where the twist lives}
+
+In \emph{Factors Before Quotients}, the golden derivative obeyed a visibly twisted product rule:
+\[
+    \partial_\ph(fg)=(\partial_\ph f)g+\sig_\ph(f)(\partial_\ph g).
+\]
+For the decagonal Fourier transform, convolution diagonalizes without changing the theorem statement:
+\[
+    \widehat{f*g}_m=\widehat f_m\widehat g_m.
+\]
+But when multiplying spectral components
+\[
+    \widehat f_m=A+BU,
+    \qquad
+    \widehat g_m=C+DU,
+\]
+the product is
+\[
+    (A+BU)(C+DU)=(AC-BD)+(AD+BC+\ph BD)U.
+\]
+The term $\ph BD$ is the arithmetic trace of the phase relation
+\[
+    U^2=\ph U-1.
+\]
+Thus:
+\[
+    \boxed{\text{convolution is ordinary; phase multiplication carries the golden twist.}}
+\]
+
+\section{Scalar modes and phase-conjugate pairs}
+
+Because the input signal is $R$-valued, the phase conjugation symmetry is exact.
+
+\begin{theorem}[Spectral conjugation decomposition]
+For $f\in R^{10}$,
+\[
+    \sig(\widehat f_m)=\widehat f_{10-m}.
+\]
+Consequently,
+\[
+    \widehat f_0,\widehat f_5\in R,
+\]
+and the remaining frequencies form phase-conjugate pairs
+\[
+    (1,9),\quad(2,8),\quad(3,7),\quad(4,6).
+\]
+Thus the ten spectral degrees of freedom decompose as
+\[
+    2\text{ scalar modes}+4\text{ phase-conjugate pairs}.
+\]
+\end{theorem}
+
+\begin{proof}
+Since $f_k\in R$ and $\sig$ fixes $R$,
+\[
+    \sig(\widehat f_m)
+    =\sig\left(\sum_{k=0}^{9}f_kU^{km}\right)
+    =\sum_{k=0}^{9}f_kU^{-km}
+    =\widehat f_{10-m}.
+\]
+For $m=0$,
+\[
+    \widehat f_0=\sum_{k=0}^{9}f_k\in R.
+\]
+For $m=5$, since $U^5=-1$,
+\[
+    \widehat f_5=\sum_{k=0}^{9}f_kU^{5k}
+    =\sum_{k=0}^{9}f_k(-1)^k\in R.
+\]
+The remaining modes pair as listed.  Since each phase-valued component has two $R$-coordinates and each scalar component has one, the count is
+\[
+    2\cdot1+4\cdot2=10.
+\]
+\end{proof}
+
+This theorem is the concrete form of the phrase ``phase-valued spectrum.''  A ten-slot spectrum is not a flat ten-tuple of independent scalar golden integers; it is two scalar modes together with four conjugate phase pairs.
+
+\section{Trace and spread shadows of the spectrum}
+
+Given a spectral component $\widehat f_m\in\RR$, its trace and spread shadows are
+\[
+    \Tr(\widehat f_m)=\widehat f_m+\sig(\widehat f_m),
+\]
+\[
+    \Sp(\widehat f_m)=\widehat f_m-\sig(\widehat f_m).
+\]
+Using the conjugation theorem,
+\[
+    \Tr(\widehat f_m)=\widehat f_m+\widehat f_{10-m},
+\]
+\[
+    \Sp(\widehat f_m)=\widehat f_m-\widehat f_{10-m}.
+\]
+These are the unnormalized analogues of cosine and sine projections.
+
+If one wants normalized cosine/sine coordinates, one writes
+\[
+    \frac{\widehat f_m+\widehat f_{10-m}}2,
+    \qquad
+    \frac{\widehat f_m-\widehat f_{10-m}}2.
+\]
+But the division by $2$ belongs to the rate layer.  The native projections are the unnormalized trace and spread.
+
+\section{Native cosine and sine kernels}
+
+Define
+\[
+    T_n(U)=U^n+U^{-n},
+\]
+\[
+    S_n(U)=U^n-U^{-n}.
+\]
+These are the trace and spread kernels of the phase orbit.
+
+In the decagonal case, the trace values lie in the small explicit golden set
+\[
+    T_n(U)\in\{2,-2,\ph,-\ph,\ph^{-1},-\ph^{-1}\}.
+\]
+This is a concrete consequence of working over the golden real cyclotomic field.  It is not a second justification for the name ``golden''; that justification was the cyclotomic identity in Section 3.  It does, however, show that scalar trace shadows of the phase kernel are exact golden quantities.
+
+The spread values are anti-fixed under phase conjugation.  They should be kept unnormalized unless the rate layer is explicitly invoked.
+
+\section{Matrix form}
+
+Let $F$ be the Fourier matrix
+\[
+    F=(U^{mk})_{m,k=0}^{9}.
+\]
+Then
+\[
+    \widehat f=Ff.
+\]
+The entries of $F$ lie in $\RR$.
+
+Let $F^\sig$ denote the conjugate transpose, using $\sig(U)=U^{-1}$.  Then the $(a,b)$-entry of $F^\sig F$ is
+\[
+    \sum_{k=0}^{9}\sig(U^{ak})U^{bk}
+    =\sum_{k=0}^{9}U^{k(b-a)}.
+\]
+By phase orthogonality,
+\[
+    F^\sig F=10I.
+\]
+Therefore
+\[
+    F^{-1}=\left[F^\sig:10\right]_{S_{10}}
+\]
+in the rate layer.
+
+\section{Comparison with the classical DFT}
+
+\begin{center}
+\small
+\begin{tabular}{p{0.42\linewidth}p{0.46\linewidth}}
+\toprule
+Classical DFT & Golden-native reading \\
+\midrule
+Root of unity $e^{2\pi i/10}$ & Phase object $U$ with $U^2-\ph U+1=0$ \\
+Complex spectrum & Phase-ring spectrum $A+BU$ \\
+Inverse factor $1/10$ & Rate class with denominator $10$ \\
+Cosine/sine components & Trace/spread shadows \\
+Convolution theorem & Pointwise product in $\RR$ \\
+Complex conjugation & Phase involution $\sig(U)=U^{-1}=\ph-U$ \\
+Real-signal symmetry & $2+4$ scalar/phase-conjugate decomposition \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The Fourier theorems in this table are standard finite-group Fourier analysis.  The golden contribution is the phase-ring realization forced by
+\[
+    \ph=U+U^{-1}
+\]
+and its compatibility with the trace, spread, and rate layers of the series.
+
+\section{Open questions}
+
+\begin{question}[Five-point versus ten-point form]
+The golden real cyclotomic field also appears for $n=5$, but the primitive fifth root has trace $\ph^{-1}$ rather than $\ph$.  Can the decagonal transform be compressed to a five-point transform with signed phase data, and what is lost when the relation $U^5=-1$ is collapsed?
+\end{question}
+
+\begin{question}[Fast golden Fourier transform]
+Does the factorization of the cyclic group $\Z/10\Z$ yield a useful exact FFT over the phase ring $\RR$?  How should the rate denominator $10$ be managed in such a factorization?
+\end{question}
+
+\begin{question}[The quadratic-cyclotomic family]
+The same quadratic-cyclotomic construction applies to the four cases $n=5,8,10,12$, corresponding to
+\[
+    \Q(\sqrt5),\quad \Q(\sqrt2),\quad \Q(\sqrt5),\quad \Q(\sqrt3).
+\]
+Thus the golden decagonal transform is one member of a classified family of quadratic-cyclotomic transforms.  How do the $n=8$ and $n=12$ cases compare structurally with the golden case?  Do they yield silver and triangular analogues of the same phase-ring architecture?
+\end{question}
+
+\begin{question}[Higher cyclotomic layers]
+If $\Q(\zz_n)^+$ has degree greater than $2$, does the spectrum require higher-slot phase tuples?  How does the $2+4$ decomposition generalize to Galois orbits of characters in higher cyclotomic degree?
+\end{question}
+
+\begin{question}[Fourier and golden calculus]
+Can the golden difference operator from \emph{Factors Before Quotients} be diagonalized on finite cyclic phase spaces?  Is there a finite spectral avatar of the contraction calculus?
+\end{question}
+
+\begin{question}[Representation-theoretic completion]
+Can the scalar/phase decomposition of the spectrum be stated as the first example of a general Galois-orbit decomposition of phase-valued spectra?
+\end{question}
+
+\section{Conclusion: phase before frequencies}
+
+The golden decagonal Fourier transform is the ordinary Fourier transform on $\Z/10\Z$ viewed through the phase layer forced by
+\[
+    \ph=U+U^{-1}.
+\]
+Its spectral values are not scalar golden integers.  They live in the rank-two phase ring
+\[
+    \RR=\Z[\ph][U]/(U^2-\ph U+1).
+\]
+The inverse transform is not scalar-native; it is rate-native, carrying the fixed denominator $10$.  The convolution theorem remains formally ordinary,
+\[
+    \widehat{f*g}_m=\widehat f_m\widehat g_m,
+\]
+but the golden twist resides in phase multiplication,
+\[
+    U^2=\ph U-1.
+\]
+
+The series' trigonometric slogan therefore becomes a Fourier slogan:
+\[
+    \boxed{\text{Fourier analysis begins not with angles, but with phase characters.}}
+\]
+
+\begin{thebibliography}{99}
+
+\bibitem{santosGoldenShadow}
+V. Santos.
+\newblock A golden shadow algebra: trace completion from a \(\varphi\)-leaf scalar grammar.
+\newblock Companion manuscript, 2026.
+
+\bibitem{santosQuotients}
+V. Santos.
+\newblock Quotients without division: unit actions, rate localizations, and factor projections in a \(\varphi\)-native algebra.
+\newblock Companion manuscript, 2026.
+
+\bibitem{santosShadowTrig}
+V. Santos.
+\newblock Shadow trigonometry: norm-one orbits, golden traces, and cyclotomic phase.
+\newblock Companion manuscript, 2026.
+
+\bibitem{santosSignatures}
+V. Santos.
+\newblock Signatures before roots: shadow lifts, norm forms, and radical spreads.
+\newblock Companion manuscript, 2026.
+
+\bibitem{santosCalculus}
+V. Santos.
+\newblock Factors before quotients: golden difference calculus, bounded derivative weights, and a non-entire exponential.
+\newblock Companion manuscript, 2026.
+
+\bibitem{WashingtonCyclotomic}
+L. C. Washington.
+\newblock \emph{Introduction to Cyclotomic Fields}.
+\newblock 2nd edition, Springer, 1997.
+
+\bibitem{TerrasFourier}
+A. Terras.
+\newblock \emph{Fourier Analysis on Finite Groups and Applications}.
+\newblock Cambridge University Press, 1999.
+
+\bibitem{SerreRepresentations}
+J.-P. Serre.
+\newblock \emph{Linear Representations of Finite Groups}.
+\newblock Springer, 1977.
+
+\end{thebibliography}
+
+\end{document}

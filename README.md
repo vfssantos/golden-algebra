@@ -2,7 +2,7 @@
 
 Exploratory research manuscripts by **Vinicius Santos** (June 2026).
 
-This repository develops a **φ-native shadow algebra**: a layered mathematical framework in which familiar operations (addition, division, trigonometry, roots) are not taken as scalar primitives but are relocated to typed layers—trace projections, relations, factor extractions, phase orbits, and spread lifts.
+This repository develops a **φ-native shadow algebra**: a layered mathematical framework in which familiar operations (addition, division, trigonometry, roots, calculus, finite Fourier analysis) are not taken as scalar primitives but are relocated to typed layers—trace projections, relations, factor extractions, phase orbits, spread lifts, divisibility-based factor projections, and phase-valued spectra.
 
 The program is motivated by a question parallel to Odrzywołek's **EML** construction ([arXiv:2603.21852](https://arxiv.org/abs/2603.21852)): if elementary functions can be generated from the leaf `1` and `eml(x,y) = e^x − log y`, what algebraic universe is naturally generated from the **golden ratio** φ as the distinguished leaf?
 
@@ -16,6 +16,8 @@ The program is motivated by a question parallel to Odrzywołek's **EML** constru
 | 2 | [`02_quotients_without_division_phi_native.tex`](02_quotients_without_division_phi_native.tex) | *Quotients Without Division* | Rate + factor |
 | 3 | [`03_shadow_trigonometry_phi_native.tex`](03_shadow_trigonometry_phi_native.tex) | *Shadow Trigonometry* | Phase |
 | 4 | [`04_signatures_before_roots_phi_native.tex`](04_signatures_before_roots_phi_native.tex) | *Signatures Before Roots* | Signature / spread lift |
+| 5 | [`05_factors_before_quotients_phi_calculus.tex`](05_factors_before_quotients_phi_calculus.tex) | *Factors Before Quotients* | Factor / calculus |
+| 6 | [`06_phase_before_frequencies_golden_decagonal_fourier.tex`](06_phase_before_frequencies_golden_decagonal_fourier.tex) | *Phase Before Frequencies* | Phase + rate (decagonal Fourier) |
 
 **Read in order.** Each later manuscript assumes the vocabulary and layers of the earlier ones.
 
@@ -26,6 +28,8 @@ pdflatex 01_golden_shadow_algebra.tex
 pdflatex 02_quotients_without_division_phi_native.tex
 pdflatex 03_shadow_trigonometry_phi_native.tex
 pdflatex 04_signatures_before_roots_phi_native.tex
+pdflatex 05_factors_before_quotients_phi_calculus.tex
+pdflatex 06_phase_before_frequencies_golden_decagonal_fourier.tex
 ```
 
 ---
@@ -38,8 +42,8 @@ Use this framework when you need to:
 
 - **Translate** a classical arithmetic or analytic expression into the correct *layer* (scalar, trace, rate, factor, phase, signature).
 - **Decide** whether an operation belongs in the visible scalar grammar or requires a shadow lift.
-- **Avoid** treating addition, division, trig, or radicals as interchangeable scalar primitives.
-- **Reason** about φ-native algebra: exact constants in ℤ[φ], density without division, conjugate-pair arithmetic, golden phase torsion, discriminant signatures.
+- **Avoid** treating addition, division, trig, radicals, or derivatives as interchangeable scalar primitives.
+- **Reason** about φ-native algebra: exact constants in ℤ[φ], density without division, conjugate-pair arithmetic, golden phase torsion, discriminant signatures, golden difference calculus, decagonal phase-valued Fourier transform.
 
 This is **not** a computational library. There is no code API. The deliverable is a **conceptual hierarchy** and a set of **replacement rules** for classical notation.
 
@@ -54,6 +58,8 @@ This is **not** a computational library. There is no code API. The deliverable i
 | Write `u / v` as a function | Use relation `Quot(u,v;q) ⟺ u = qv`, or factor projection |
 | Start from `sin θ`, `cos θ`, `π` | Start from phase `U` with `U^σ = U⁻¹`, projections `T(U)`, `S(U)` |
 | Write `√(S² − 4P)` as primitive | Spread lift: find `D` with `D² = S² − 4P` (signature layer) |
+| Write `(f(x+h)−f(x))/h` or `df/dx` as primitive | Golden difference Δ_φ f = f(x)−f(φ⁻¹x); derivative ∂_φ f via `Δ_φ f = (∂_φ f) Δ_φ x` (factor layer) |
+| Write DFT with `e^{2πikm/N}` as scalar spectrum | Phase object U with U²−φU+1=0; spectrum in phase ring; inverse uses rate `/10` (Paper 6) |
 
 ### Native hierarchy (use this to route queries)
 
@@ -66,8 +72,8 @@ Scalar  →  Trace  →  Rate  →  Factor  →  Phase  →  Signature
 | **Scalar** | constants, multiplication, predecessor, unit contraction | `B(x,y) = xy − y`, leaf φ, constants ℤ[φ] | Polynomial expressions, golden contraction, anything provably in the scalar fragment |
 | **Trace** | addition | pair `⟨x \| y⟩`, projection `Tr⟨x \| y⟩ = x + y` | Any genuine mixed addition of independent variables |
 | **Rate** | fixed-denominator division, averaging | rate class `[x:n]`, diagonal trace section `Tr_n(Δ_n(q)) = nq` | `x/n`, half of a trace, rationalization without variable poles |
-| **Factor** | derivative-like quotients | `Fact_d(h)`: unique `g` with `h = gd` | Slopes, golden difference `Δ_φ f = (∂_φ f) Δ_φ x` |
-| **Phase** | trigonometry | norm-one unit `U`, `T(U) = U + U⁻¹`, `S(U) = U − U⁻¹` | Periodicity, Chebyshev-type recurrences, circular geometry |
+| **Factor** | derivative-like quotients, calculus | `Fact_d(h)`: unique `g` with `h = gd`; golden derivative on polynomials | Slopes, `Δ_φ f = (∂_φ f) Δ_φ x`, q-Leibniz, chain factorization (Paper 5) |
+| **Phase** | trigonometry, finite Fourier | norm-one unit `U`, `T(U) = U + U⁻¹`, `S(U) = U − U⁻¹`; phase ring `R_φ = ℤ[φ][U]/(U²−φU+1)` | Periodicity, cyclotomic phase, decagonal DFT (Paper 6); spectrum not generally in ℤ[φ] |
 | **Signature** | roots, embeddings | spread lift `D² = Tr² − 4 Nm`; real sign of Δ selects geometry | Quadratics, discriminants, `√5`, imaginary unit as elliptic spread |
 
 ### Shared notation (glossary)
@@ -85,8 +91,14 @@ Scalar  →  Trace  →  Rate  →  Factor  →  Phase  →  Signature
 | ℤ[φ] | `{a + bφ : a,b ∈ ℤ}` — exact scalar constants | scalar |
 | C_φ(x) | `B(φ,x) = (φ−1)x = x/φ` — golden contraction | scalar (unit action) |
 | q | `φ⁻¹ = φ − 1` | scalar / factor |
-| [n]_φ | `1 + q + … + q^(n−1)` — φ-integer | factor |
-| U | phase object: unit with `U^σ = U⁻¹`, `Nm(U) = 1` | phase |
+| [n]_φ | `1 + q + … + q^(n−1) = φ² − φ^(2−n)` — golden weight | factor |
+| [n]_φ! | `[1]_φ [2]_φ … [n]_φ` — golden factorial | factor / rate |
+| ∂_φ f | golden derivative: `Δ_φ f = (∂_φ f) Δ_φ x` | factor |
+| Δ_φ f | `f(x) − f(φ⁻¹x)` — golden difference | factor |
+| E_φ(x) | `Σ x^n / [n]_φ!` — golden exponential (radius φ²) | factor / analytic |
+| U | phase object: unit with `U^σ = U⁻¹`, `Nm(U) = 1`; decagonal case `U = ζ₁₀`, `U + U⁻¹ = φ` | phase |
+| R_φ | `ℤ[φ][U]/(U² − φU + 1)` — golden phase ring; elements `A + BU`, reduction `U² = φU − 1` | phase |
+| f̂_m | `Σ_{k=0}^9 f_k U^{km}` — decagonal Fourier coefficient (phase-valued) | phase |
 | T(U), S(U) | `U + U⁻¹`, `U − U⁻¹` (unnormalized) | phase |
 | Δ | `S² − 4P = Sp²` — discriminant / spread square | signature |
 
@@ -99,30 +111,39 @@ Scalar  →  Trace  →  Rate  →  Factor  →  Phase  →  Signature
 | `x / φ` | `C_φ(x) = B(φ, x)` |
 | `x / n` (fixed n) | rate `[x:n]` or solve `Tr_n(Δ_n(q)) = x` |
 | `u / v` | relation `u = qv` |
-| `Δf / Δx` | `Fact_{Δx}(Δf)` |
+| `Δf / Δx` | `Fact_{Δx}(Δf)`; for golden calculus: `∂_φ f` with `Δ_φ f = (∂_φ f) Δ_φ x` |
+| `df/dx`, `(f(x+h)−f(x))/h` | fixed-scale golden difference + factor projection (not a limit) |
+| `e^x` | `E_φ(x) = Σ x^n/[n]_φ!` — radius φ², **not entire** |
+| `∫ x^n dx` | rate object `[x^(n+1) : [n+1]_φ]`; needs localization for n ≥ 2 |
 | `1/x` | local ℤ[φ]-polynomial approximation on `[a,b]`, `0 < a` |
 | `2 cos θ` | `T(U) = U + U⁻¹` |
 | `2i sin θ` | `S(U) = U − U⁻¹` |
 | `arccos(t/2)` | phase lift `U² − tU + 1 = 0` |
 | `√(S² − 4P)` | spread lift: `D² = S² − 4P` |
 | `2 cos(π/5) = φ` | **reversed:** φ is visible trace; hidden `U` has `U + U⁻¹ = φ`, order 10 |
+| DFT on ℤ/10ℤ | `f̂_m = Σ f_k U^{km}` with `U² − φU + 1 = 0`; signals in `ℤ[φ]¹⁰`, spectrum in `R_φ` |
+| IDFT / inverse DFT | `f_k = [Σ_m f̂_m U^{-km} : 10]` (rate layer; `1/10 ∉ ℤ[φ]`) |
+| Convolution theorem | `widehat{f*g}_m = f̂_m ĝ_m` in `R_φ`; golden twist in phase-ring multiplication |
+| Real-signal DFT symmetry | `2` scalar modes (`m=0,5`) + `4` phase-conjugate pairs → 10 DOF |
 
 ### Agent routing checklist
 
 When given an expression or problem:
 
-1. **Identify the operation class** (addition, unit scale, fixed average, variable reciprocal, trig, root).
+1. **Identify the operation class** (addition, unit scale, fixed average, variable reciprocal, trig, root, derivative, integral, finite Fourier).
 2. **Check scalar definability** (Paper 1): mixed affine forms `ax + by + c` with `a,b ≠ 0` are **never** scalar-definable from **B** alone.
 3. **Pick the lowest sufficient layer** from the hierarchy above.
 4. **For φ-specific geometry**, distinguish the two golden anchors (Paper 4):
    - Phase trace `(S,P) = (φ, 1)` → Δ = φ − 3 < 0 → **circular / pentagonal** (`U¹⁰ = 1`).
    - Scalar pair `⟨φ \| ψ⟩` → `(S,P) = (1, −1)` → Δ = 5 > 0 → **hyperbolic / √5 spread**.
 5. **Separate signature from square-class**: real sign of Δ selects embedding geometry; algebraic square-class decides if spread already lives in the current ring/field.
+6. **For calculus** (Paper 5): displacement is contraction `x ↦ φ⁻¹x`, not `x + h`. Derivative is divisibility/factor projection. Weights `[n]_φ → φ²` (bounded at chosen real place). Chain rule is two-stage; clean form only for inner maps `g(x) = cx`. Integration needs rate layer except at weights `[1]_φ`, `[2]_φ`.
+7. **For finite Fourier** (Paper 6): use decagonal phase `U` with `ζ₁₀ + ζ₁₀⁻¹ = φ` (not n=5, whose trace is φ⁻¹). Forward spectrum lives in `R_φ`, not ℤ[φ]. Orthogonality and convolution theorem are standard for ℤ/10ℤ; golden content is phase-ring placement and `U² = φU − 1` in spectral products. Inverse requires rate `/10`.
 
 ### Status and scope
 
 - **Status:** exploratory drafts, not peer-reviewed.
-- **Scope:** exact finite-depth algebra, typed completions, and conceptual reordering of classical operations. Full φ-calculus, continuous phase, and analytic completion are flagged as future work.
+- **Scope:** exact finite-depth algebra, typed completions, polynomial golden calculus, decagonal phase-valued DFT, and conceptual reordering of classical operations. Continuous phase, full analytic categories, fast FFT over `R_φ`, and deformation to ordinary calculus (`q → 1`) are flagged as future work.
 - **Not claimed:** replacement for EML universality; global polynomial substitute for `1/x`; complete categorical formalization.
 
 ---
@@ -230,7 +251,59 @@ When given an expression or problem:
 
 ---
 
-## Program arc (how the four papers connect)
+### 5. `05_factors_before_quotients_phi_calculus.tex` — *Factors Before Quotients*
+
+**One-line summary:** Calculus begins with divisibility, not division: the golden derivative is a factor projection along fixed contraction scale φ⁻¹, yielding bounded weights, a non-entire exponential, and integration obstructions solved by rate localization.
+
+**Question addressed:** What remains of calculus if differentiation is not introduced as a quotient (and limit), but as factor extraction from a golden difference?
+
+**Summary:** Paper 2 previewed the golden factor derivative as a worked example; this paper develops full polynomial golden calculus. Displacement comes from native unit action C_φ(x) = φ⁻¹x (scalar layer). Golden difference Δ_φ f(x) = f(x) − f(φ⁻¹x) is divisible by Δ_φ x = x − φ⁻¹x for f ∈ ℤ[φ][x]; golden derivative ∂_φ f is the unique factor in the divisibility relation Δ_φ f = (∂_φ f) Δ_φ x—not a pointwise quotient (avoiding 0/0 at the fixed point x = 0). Formally this is Jackson q-calculus at q = φ⁻¹, but the φ-native route and golden specialization matter: weights collapse to [n]_φ = φ² − φ^(2−n), bounded and converging to φ² at the chosen real embedding (unbounded under the conjugate embedding). Product rule is twisted q-Leibniz with contraction twist f(x) ↦ f(φ⁻¹x). Chain rule is two-stage factorization via polynomial divided differences; ordinary chain rule holds only for inner maps g(x) = cx. Golden exponential E_φ(x) = Σ x^n/[n]_φ! has radius φ² = φ + 1—not entire. Integration of x^n requires rate localization at [n+1]_φ; only [1]_φ and [2]_φ are units in ℤ[φ]. Fixed scale (self-similar), not infinitesimal limit.
+
+**Main results:**
+
+| Result | Statement |
+|--------|-----------|
+| Golden derivative (Thm) | ∀ f ∈ ℤ[φ][x], ∃ unique ∂_φ f with f(x) − f(φ⁻¹x) = (∂_φ f)(x)(x − φ⁻¹x) |
+| Monomial rule (Prop) | ∂_φ x^n = [n]_φ x^(n−1) |
+| Weight collapse (Prop) | [n]_φ = φ² − φ^(2−n); increasing to φ² at chosen real embedding |
+| Twisted product rule (Prop) | ∂_φ(fg) = (∂_φ f)g + f(φ⁻¹x)(∂_φ g) |
+| Chain factorization (Prop) | ∂_φ(f∘g) = Diff_f(g(x), g(φ⁻¹x)) · (∂_φ g)(x) |
+| Clean chain rule (Prop) | g(φ⁻¹x) = φ⁻¹ g(x) iff g(x) = cx for some c ∈ ℤ[φ] |
+| Golden exponential radius (Thm) | E_φ(x) = Σ x^n/[n]_φ! has radius of convergence φ²; not entire |
+| Weight units (Prop) | [n]_φ is a unit in ℤ[φ] iff n = 1 or n = 2 |
+| Integration | Antiderivative of x^n is rate `[x^(n+1) : [n+1]_φ]`; needs localization for n ≥ 2 |
+
+**Slogan:** *Calculus begins not with division, but with divisibility.* — *The derivative is a factor shadow.*
+
+---
+
+### 6. `06_phase_before_frequencies_golden_decagonal_fourier.tex` — *Phase Before Frequencies*
+
+**One-line summary:** The ℤ/10ℤ DFT is not new; its golden placement uses decagonal phase U with trace φ, a phase-valued spectrum in R_φ = ℤ[φ][U]/(U²−φU+1), rate-native inversion by 10, and 2+4 spectral conjugation decomposition.
+
+**Question addressed:** How does finite Fourier analysis sit in the shadow layer architecture—and what is genuinely golden versus standard cyclic group theory?
+
+**Summary:** Orthogonality, inversion, and the convolution theorem for N=10 are classical (ℤ/10ℤ character theory). The golden-specific input is the cyclotomic coincidence Q(ζ₁₀)⁺ = Q(√5) = Q(φ) and especially ζ₁₀ + ζ₁₀⁻¹ = φ (decagonal, not pentagonal: ζ₅ + ζ₅⁻¹ = φ⁻¹). With U = ζ₁₀, the phase lift U² − φU + 1 = 0 defines the rank-two **golden phase ring** R_φ. Signals f ∈ ℤ[φ]¹⁰ are ten-slot tuples; forward transform f̂_m = Σ f_k U^{km} ∈ R_φ (phase-valued, not generally scalar). Reduction rule U² = φU − 1 governs spectral multiplication—the golden twist. Inverse reconstruction f_k = (1/10)Σ_m f̂_m U^{-km} requires fixed denominator 10 → **rate layer** (1/10 ∉ ℤ[φ]). Convolution diagonalizes pointwise in R_φ with ordinary theorem statement. Phase involution σ(U) = U⁻¹ = φ − U gives σ(f̂_m) = f̂_{10−m}; spectrum decomposes as **2 scalar modes** (m=0,5) + **4 phase-conjugate pairs** (1,9),(2,8),(3,7),(4,6). Trace/spread of spectral components give unnormalized cos/sin shadows; division by 2 is rate-layer. Connects Paper 3's decagonal clock (U¹⁰=1) to finite harmonic analysis.
+
+**Main results:**
+
+| Result | Statement |
+|--------|-----------|
+| Golden cyclotomic layers (Prop) | Q(ζ_n)⁺ = Q(√5) iff n = 5 or 10; only n=10 has primitive phase trace φ |
+| Phase ring (Def) | R_φ = ℤ[φ][U]/(U²−φU+1); normal form A+BU; σ(U) = φ−U |
+| Phase-ring multiplication (Prop) | (A+BU)(C+DU) = (AC−BD) + (AD+BC+φBD)U |
+| Decagonal Fourier transform (Def) | f̂_m = Σ_{k=0}^9 f_k U^{km} for f ∈ ℤ[φ]¹⁰ |
+| Phase orthogonality (Prop) | Σ_k U^{kj} = 10 if j≡0 (mod 10), else 0 |
+| Inverse transform | f_k = [Σ_m f̂_m U^{-km} : 10] (rate-native) |
+| Convolution theorem (Thm) | widehat{f*g}_m = f̂_m ĝ_m in R_φ |
+| Spectral conjugation (Thm) | σ(f̂_m) = f̂_{10−m}; 2 scalar + 4 conjugate pairs = 10 DOF |
+| Matrix form | F^σ F = 10I; F⁻¹ = [F^σ : 10] in rate layer |
+
+**Slogan:** *Phase before frequencies.* — *Convolution is ordinary; phase multiplication carries the golden twist.*
+
+---
+
+## Program arc (how the six papers connect)
 
 ```
 EML (leaf 1 + eml)
@@ -240,12 +313,16 @@ Paper 1: scalar B-grammar + trace completion
         │
         ├──► Paper 2: division splits into roles
         │         │
-        │         └──► factor projection, golden derivative
+        │         └──► factor projection (preview)
         │
         ├──► Paper 3: phase orbits, golden circular bridge
+        │         │
+        │         └──► Paper 6: decagonal Fourier (phase-valued spectrum)
         │
-        └──► Paper 4: spread lifts, discriminant signatures
-                  (integrates all prior layers)
+        ├──► Paper 4: spread lifts, discriminant signatures
+        │
+        └──► Paper 5: golden difference calculus
+                  (full factor layer; integrates Papers 1–2, rate layer)
 ```
 
 Each step applies the same move to a different classical operation:
@@ -256,6 +333,8 @@ Each step applies the same move to a different classical operation:
 | 2 | Division | Unit action, rates, relations, factor projection |
 | 3 | Trigonometry | Phase objects, trace/spread projections |
 | 4 | Roots / radicals | Spread lifts from (Tr, Nm) |
+| 5 | Calculus / derivative | Golden difference + factor projection; fixed contraction scale |
+| 6 | Finite Fourier / DFT | Decagonal phase U; spectrum in R_φ; inverse via rate /10 |
 
 ---
 
@@ -263,8 +342,11 @@ Each step applies the same move to a different classical operation:
 
 - A. Odrzywołek, *All elementary functions from a single binary operator*, [arXiv:2603.21852](https://arxiv.org/abs/2603.21852) (2026)
 - K. Conrad, [Trace and Norm](https://kconrad.math.uconn.edu/blurbs/galoistheory/tracenorm.pdf) (expository notes)
-- F. H. Jackson, q-calculus (formal overlap at q = φ⁻¹ in Paper 2)
-- L. C. Washington, *Introduction to Cyclotomic Fields* (phase / cyclotomic material in Papers 3–4)
+- F. H. Jackson, q-calculus (formal overlap at q = φ⁻¹ in Papers 2 and 5)
+- V. Kac & P. Cheung, *Quantum Calculus* (q-calculus references in Paper 5)
+- L. C. Washington, *Introduction to Cyclotomic Fields* (phase / cyclotomic material in Papers 3–4, 6)
+- A. Terras, *Fourier Analysis on Finite Groups and Applications* (Paper 6)
+- J.-P. Serre, *Linear Representations of Finite Groups* (Paper 6)
 
 ---
 

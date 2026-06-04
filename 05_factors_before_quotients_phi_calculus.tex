@@ -30,7 +30,6 @@
 \newcommand{\Nm}{\operatorname{N}}
 \newcommand{\Sp}{\operatorname{Sp}}
 \newcommand{\Diff}{\operatorname{Diff}}
-\newcommand{\Frac}{\operatorname{Frac}}
 \newcommand{\sig}{\sigma}
 \newcommand{\ph}{\varphi}
 \newcommand{\ps}{\psi}
@@ -42,9 +41,11 @@
 \newcommand{\Del}{\Delta_{\ph}}
 \newcommand{\Cph}{C_{\ph}}
 \newcommand{\Eph}{E_{\ph}}
+\newcommand{\Etw}{\mathcal E_{\ph}}
+\newcommand{\ord}{\operatorname{ord}}
 
 \title{Factors Before Quotients\\
-\large Golden Difference Calculus, Bounded Derivative Weights, and a Non-Entire Exponential}
+\large Golden Difference Calculus, Bounded Derivative Weights, and Two Exponential Layers}
 \author{Vinicius Santos\\
 \small Exploratory draft}
 \date{June 2026}
@@ -78,11 +79,9 @@ The resulting operator is formally the Jackson $q$-difference operator at $q=\ph
     [n]_{\ph}=1+\ph^{-1}+\cdots+\ph^{-(n-1)}
        =\ph^2-\ph^{2-n}.
 \]
-Under the chosen real embedding $\ph=(1+\sqrt5)/2$, these weights are bounded and converge to $\ph^2$.  Under the conjugate embedding they are unbounded; boundedness is a property of the selected real place, not an intrinsic boundedness statement in the abstract ring.  This bounded-weight phenomenon has a direct analytic consequence: after passing to a coefficient layer where the required inverses exist, the eigenfunction series
-\[
-    \Eph(x)=\sum_{n\ge0}\frac{x^n}{[n]_{\ph}!}
-\]
-has radius of convergence exactly $\ph^2=\ph+1$.  The golden exponential is therefore not entire.  The integration layer has a parallel arithmetic obstruction: among the weights $[n]_{\ph}$, only $[1]_{\ph}$ and $[2]_{\ph}$ are units in $\Z[\ph]$, so most antiderivatives require a genuine rate/localization layer.  Thus the fixed-scale nature of golden contraction is not merely a caveat; it is the source of the paper's main analytic distinction from ordinary calculus.
+Under the chosen real embedding $\ph=(1+\sqrt5)/2$, these weights are bounded and converge to $\ph^2$.  Under the conjugate embedding they are unbounded; boundedness is a property of the selected real place, not of the abstract ring.
+
+This bounded-weight phenomenon has a direct analytic consequence: the untwisted eigen-equation $\dd E=E$ gives a reciprocal-product exponential with radius of convergence exactly $\ph^2=\ph+1$, hence a non-entire function.  By contrast, the twist-compatible equation $\dd\mathcal E=\sig_{\ph}(\mathcal E)$ gives a product exponential whose finite approximants are denominator-free polynomials in $\Z[\ph][x]$ and whose completed product is entire.  These are the two standard $q$-exponentials at $q=\ph^{-1}$; the contribution here is their placement in the $\ph$-native hierarchy.  The untwisted exponential lives in the localization layer, while the twisted exponential lives first in the polynomial/completion layer.  The same orbit viewpoint explains the logarithmic boundary: on the golden unit group, logarithm is the exact integer index $\ord_{\ph}(\ph^k)=k$; off the group, scalar analytic logarithm is an interpolation of that index, with denominators recording the cost of leaving the discrete orbit.  The product exponential has zeros at $-\ph^{2+k}$, the reciprocal exponential has poles at $+\ph^{2+k}$, and the nearest orbit obstruction explains the common radius $\ph^2$.  The integration layer has a parallel arithmetic obstruction: among the weights $[n]_{\ph}$, only $[1]_{\ph}$ and $[2]_{\ph}$ are units in $\Z[\ph]$.
 \end{abstract}
 
 \tableofcontents
@@ -137,7 +136,7 @@ There is also a $\ph$-specific analytic payoff.  The monomial weights do not gro
 \[
     [n]_{\ph}=\ph^2-\ph^{2-n}\longrightarrow \ph^2
 \]
-in the chosen real embedding.  The same boundedness gives, by the ratio test, a non-entire golden exponential with radius $\ph^2$.  This is the paper's main distinction from a merely generic rephrasing of Jackson $q$-calculus.
+in the chosen real embedding.  The same boundedness gives, by the ratio test, a non-entire reciprocal exponential with radius $\ph^2$.  But the twisted product rule also reveals a second, more polynomial-facing exponential: the twist-compatible eigen-equation produces denominator-free finite approximants and an entire completed product.  The two exponentials sort naturally into two layers rather than competing for a single definition.
 
 \subsection*{Main results}
 
@@ -160,11 +159,13 @@ The main results are:
         [n]_{\ph}=\ph^2-\ph^{2-n}.
     \]
     In the chosen real embedding they increase to $\ph^2$; in the conjugate embedding they are unbounded.
-    \item The golden exponential
+    \item The untwisted eigen-equation $\dd E=E$ gives a reciprocal-product exponential with radius of convergence $\ph^2$, hence a non-entire function.
+    \item The twisted eigen-equation $\dd\mathcal E=\sig_{\ph}(\mathcal E)$ gives a product exponential
     \[
-        \Eph(x)=\sum_{n\ge0}\frac{x^n}{[n]_{\ph}!}
+        \mathcal E_{\ph}(x)=\prod_{k\ge0}(1+\ph^{-2-k}x)
     \]
-    has radius of convergence $\ph^2$.  Hence it is not entire.
+    whose finite approximants are denominator-free polynomials and whose completed product is entire.
+    \item The logarithmic structure collapses to one index seen in two regimes: on the golden unit group, $\ord_{\ph}(\ph^k)=k$ is exact and division-free; off the unit group, scalar analytic logarithm interpolates that index.  The poles of the reciprocal exponential occur at $+\ph^{2+k}$, while the zeros of the product exponential occur at $-\ph^{2+k}$.
     \item The product rule is the standard twisted $q$-Leibniz rule, with twist given by the native contraction $f(x)\mapsto f(\ph^{-1}x)$.
     \item The chain rule is not the ordinary chain rule.  It is a two-stage factorization, and the clean classical-looking formula holds for polynomial inner maps only in the contraction-compatible case $g(x)=cx$.
     \item Integration requires localization at the golden weights $[n]_{\ph}$; only $[1]_{\ph}$ and $[2]_{\ph}$ are units in $\Z[\ph]$.
@@ -186,11 +187,12 @@ Rate layer & fixed denominators & classes $[x:s]_S\in S^{-1}R$ \\
 Factor layer & quotient-like operators & extract factors from divisibility relations \\
 Phase layer & trigonometry & norm-one phase, trace/spread projections \\
 Signature layer & roots & spread lifts and discriminant signatures \\
+Completion layer & infinite processes & limits, products, analytic functions \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-The present note adds a calculus example to the factor layer.  Derivatives are quotients only after coordinate evaluation.  Algebraically, they are factor projections.
+The present note adds a calculus example to the factor layer.  Derivatives are quotients only after coordinate evaluation.  Algebraically, they are factor projections.  The exponential discussion then splits into two higher layers: localization for the reciprocal exponential, and completion for the product exponential.
 
 \section{Golden contraction as unit action}
 
@@ -278,15 +280,11 @@ then $(g-h)(x-qx)=0$, hence $g=h$.
 \end{proof}
 
 \begin{remark}[The fixed point at zero]
-Pointwise, the expression
-\[
-    \frac{f(x)-f(qx)}{x-qx}
-\]
-looks like $0/0$ at $x=0$.  The factor projection avoids this coordinate singularity.  The derivative is a polynomial factor in $R[x]$, globally defined even at the fixed point of the contraction.  This is the same structural move used elsewhere in the series: the algebraic object is defined before coordinate evaluation makes it look singular.
+Pointwise, the classical quotient notation would have a $0/0$ appearance at $x=0$.  The factor projection avoids this coordinate singularity.  The derivative is a polynomial factor in $R[x]$, globally defined even at the fixed point of the contraction.  This is the same structural move used elsewhere in the series: the algebraic object is defined before coordinate evaluation makes it look singular.
 \end{remark}
 
 \begin{remark}[Why fixed scale matters]
-If $q=1$, then $x-qx=0$ and the factor projection is undefined.  The construction works precisely because the golden scale is fixed away from $1$.  The same fact later explains why the golden exponential is non-entire: the calculus is self-similar at one finite contraction scale, not infinitesimal.
+If $q=1$, then $x-qx=0$ and the factor projection is undefined.  The construction works precisely because the golden scale is fixed away from $1$.  The same fact later explains why the reciprocal golden exponential is non-entire: the calculus is self-similar at one finite contraction scale, not infinitesimal.
 \end{remark}
 
 \section{The monomial rule}
@@ -398,7 +396,7 @@ Moreover, the golden identity $1-\ph^{-1}=\ph^{-2}$ collapses the monomial weigh
 \[
     [n]_{\ph}=\ph^2-\ph^{2-n}.
 \]
-The following sections use this boundedness to distinguish the associated exponential from the ordinary exponential.
+The two exponential sections below also align with the two standard $q$-exponentials.  Again, the novelty claimed here is not the pair of $q$-exponentials themselves, but their placement in the $\ph$-native layer hierarchy.
 
 \section{The twisted product rule}
 
@@ -469,11 +467,7 @@ would require
 \[
     \Diff_f(g(x),g(qx))=(\dd f)(g(x)).
 \]
-But
-\[
-    (\dd f)(g(x))
-\]
-uses the pair $g(x)$ and $qg(x)$, whereas the actual divided difference uses the pair $g(x)$ and $g(qx)$.  These agree only when
+But $(\dd f)(g(x))$ uses the pair $g(x)$ and $qg(x)$, whereas the actual divided difference uses the pair $g(x)$ and $g(qx)$.  These agree only when
 \[
     g(qx)=qg(x).
 \]
@@ -500,9 +494,9 @@ Since $q=\ph^{-1}$ is not a root of unity, $q^d=q$ only for $d=1$.  Therefore al
 
 Thus there is no general ordinary chain rule in the polynomial golden calculus.  The honest general statement is the two-stage factorization above.
 
-\section{The golden exponential as a recurrence}
+\section{The reciprocal golden exponential}
 
-A natural exponential analogue is an eigenfunction of the golden derivative:
+A natural ordinary-looking exponential analogue is an eigenfunction of the golden derivative:
 \[
     \dd E=E.
 \]
@@ -519,8 +513,8 @@ the eigenfunction equation yields the recurrence
     a_{n+1}[n+1]_{\ph}=a_n.
 \]
 
-\begin{definition}[Formal golden exponential recurrence]
-A formal golden exponential is a sequence $(a_n)_{n\ge0}$ satisfying
+\begin{definition}[Formal reciprocal golden exponential]
+A formal reciprocal golden exponential is a sequence $(a_n)_{n\ge0}$ satisfying
 \[
     a_{0}=1,
     \qquad
@@ -537,15 +531,13 @@ requires the rate/localization layer from \emph{Quotients Without Division}.  He
     [n]_{\ph}!=[1]_{\ph}[2]_{\ph}\cdots[n]_{\ph}.
 \]
 
-\section{A non-entire golden exponential}
-
 After passing to a coefficient layer where the required inverses exist, define
 \[
     \Eph(x)=\sum_{n=0}^{\infty}\frac{x^n}{[n]_{\ph}!}.
 \]
 The bounded-weight theorem immediately controls the radius of convergence.
 
-\begin{theorem}[Radius of the golden exponential]
+\begin{theorem}[Radius of the reciprocal golden exponential]
 Under the chosen real embedding $\ph=(1+\sqrt5)/2$, the power series $\Eph(x)$ has radius of convergence
 \[
     R=\ph^2=\ph+1.
@@ -569,11 +561,165 @@ Under the chosen real embedding,
 By the ratio test, the radius of convergence is $\ph^2$.
 \end{proof}
 
-Thus the boundedness of the derivative weights and the non-entire nature of the exponential are two faces of one fact.  Ordinary calculus has monomial weights $n\to\infty$, and the analogous exponential radius is infinite.  Golden calculus has monomial weights $[n]_{\ph}\to\ph^2$, and the exponential radius is finite.
+Thus the boundedness of the derivative weights and the non-entire nature of this exponential are two faces of one fact.  Ordinary calculus has monomial weights $n\to\infty$, and the analogous exponential radius is infinite.  Golden calculus has monomial weights $[n]_{\ph}\to\ph^2$, and the reciprocal exponential radius is finite.
 
 \begin{remark}[One theorem, two faces]
-The statement ``the golden derivative weights are bounded'' and the statement ``the golden exponential is not entire'' are not independent.  The latter is the ratio-test consequence of the former.  This is the main analytic payoff of fixing the contraction ratio at $\ph^{-1}$.
+The statement ``the golden derivative weights are bounded'' and the statement ``the reciprocal golden exponential is not entire'' are not independent.  The latter is the ratio-test consequence of the former.  This is the main analytic payoff of fixing the contraction ratio at $\ph^{-1}$.
 \end{remark}
+
+\begin{proposition}[Reciprocal product form]
+The analytic solution of $\dd E=E$ normalized by $E(0)=1$ satisfies formally
+\[
+    \Eph(x)=\prod_{k\ge0}(1-\ph^{-2-k}x)^{-1}.
+\]
+\end{proposition}
+
+\begin{proof}
+The equation $\dd E=E$ says
+\[
+    E(x)-E(qx)=E(x)(x-qx).
+\]
+Since $x-qx=\ph^{-2}x$, this becomes
+\[
+    E(qx)=E(x)(1-\ph^{-2}x),
+\]
+or
+\[
+    E(x)=\frac{E(qx)}{1-\ph^{-2}x}.
+\]
+Iterating and using the normalization along the contraction orbit gives the displayed reciprocal product.
+\end{proof}
+
+This product form makes the radius visible: the first pole in the chosen real embedding occurs at $x=\ph^2$.
+
+\section{The twisted product exponential}
+
+The product rule is $\sig_{\ph}$-twisted.  This suggests a second eigen-equation, aligned with the twist:
+\[
+    \dd\mathcal E=\sig_{\ph}(\mathcal E).
+\]
+This equation is not meant to replace the previous one.  It lands in a different layer.  The untwisted equation $\dd E=E$ produces a localized reciprocal exponential.  The twisted equation produces finite polynomial approximants and then an infinite product completion.
+
+\begin{theorem}[Twisted product exponential]
+Let $q=\ph^{-1}$ and define finite products
+\[
+    \mathcal E_{\ph,N}(x)=\prod_{k=0}^{N}(1+\ph^{-2-k}x).
+\]
+Each $\mathcal E_{\ph,N}$ lies in $\Z[\ph][x]$.  In the chosen real or complex completion, the infinite product
+\[
+    \Etw(x)=\prod_{k\ge0}(1+\ph^{-2-k}x)
+\]
+converges for every $x\in\C$ and satisfies
+\[
+    \dd\Etw=\sig_{\ph}(\Etw).
+\]
+Thus $\Etw$ is entire.
+\end{theorem}
+
+\begin{proof}
+The finite products have coefficients in $\Z[\ph]$ because each $\ph^{-2-k}$ is a unit of $\Z[\ph]$.
+
+To derive the equation, write $a=\ph^{-2}=1-q$.  The twisted eigen-equation says
+\[
+    \mathcal E(x)-\mathcal E(qx)=\mathcal E(qx)(x-qx)=\mathcal E(qx)ax,
+\]
+so
+\[
+    \mathcal E(x)=\mathcal E(qx)(1+ax).
+\]
+Iterating gives
+\[
+    \mathcal E(x)=\prod_{k=0}^{N}(1+aq^kx)\,\mathcal E(q^{N+1}x).
+\]
+Since $aq^k=\ph^{-2-k}$ and $q^{N+1}x\to0$ in the chosen real or complex completion, the normalization $\mathcal E(0)=1$ yields
+\[
+    \mathcal E(x)=\prod_{k\ge0}(1+\ph^{-2-k}x).
+\]
+
+The product converges locally uniformly on $\C$ because for every bounded set $|x|\le M$,
+\[
+    \sum_{k\ge0}|\ph^{-2-k}x|
+    \le M\sum_{k\ge0}\ph^{-2-k}<\infty.
+\]
+Hence it defines an entire function.  The functional equation above then gives $\dd\Etw=\sig_{\ph}(\Etw)$.
+\end{proof}
+
+\begin{remark}[Two standard $q$-exponentials]
+In classical $q$-calculus, the reciprocal series and the product series are the two standard $q$-exponentials.  This paper does not claim to discover them.  The point is their placement in the $\ph$-native hierarchy.  The ordinary-looking eigen-equation $\dd E=E$ requires coefficient localization and has a finite analytic radius.  The twist-compatible equation $\dd\mathcal E=\sig_{\ph}(\mathcal E)$ has denominator-free finite approximants and requires completion, not coefficient localization.  Each equation is legitimate; they simply live in different layers.
+\end{remark}
+
+\begin{center}
+\small
+\begin{tabular}{p{0.24\linewidth}p{0.34\linewidth}p{0.26\linewidth}}
+\toprule
+Equation & Solution form & Layer \\
+\midrule
+$\dd E=E$ & $\displaystyle\prod_{k\ge0}(1-\ph^{-2-k}x)^{-1}$ & localization; radius $\ph^2$ \\
+$\dd\mathcal E=\sig_{\ph}(\mathcal E)$ & $\displaystyle\prod_{k\ge0}(1+\ph^{-2-k}x)$ & polynomial/completion; entire \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+This distinction repairs a possible discomfort in the reciprocal exponential.  The reciprocal exponential is not wrong; it is the eigenfunction that asks for localization.  The twisted product exponential is the eigenfunction whose finite approximants remain inside the native polynomial layer.
+
+\section{Logarithm as unit-orbit index}
+
+The product exponential also clarifies where logarithm belongs.  The tempting scalar question is to ask for a power-series logarithm or a compositional inverse.  That is not the native starting point.  The native logarithmic datum is the index of the unit orbit.
+
+Let
+\[
+    U_{\ph}^{+}=\{\ph^k:k\in\Z\}
+\]
+be the positive golden unit group.  Define
+\[
+    \ord_{\ph}(\ph^k)=k.
+\]
+Then
+\[
+    \ord_{\ph}(\ph^j\ph^k)=j+k
+    =\ord_{\ph}(\ph^j)+\ord_{\ph}(\ph^k).
+\]
+Thus logarithm's product-to-sum role is exact, integer-valued, and division-free on the unit group.  In this sense, logarithm is native on the group before it is analytic on the line.
+
+This index is already present in the contraction orbit.  The scales in the product exponential are
+\[
+    \ph^{-2-k},\qquad k=0,1,2,\ldots,
+\]
+so the finite product
+\[
+    \mathcal E_{\ph,N}(x)=\prod_{k=0}^{N}(1+\ph^{-2-k}x)
+\]
+is built by walking along discrete logarithmic time.  The factor indexed by $k$ vanishes when
+\[
+    1+\ph^{-2-k}x=0,
+\]
+that is, at
+\[
+    x=-\ph^{2+k}.
+\]
+Hence the zeros of the product exponential lie on the negative golden unit orbit
+\[
+    -\ph^2,-\ph^3,-\ph^4,\ldots.
+\]
+The reciprocal exponential has the complementary obstruction: its poles lie on the positive orbit
+\[
+    \ph^2,\ph^3,\ph^4,\ldots.
+\]
+Thus the radius $\ph^2$ is not only a ratio-test limit.  It is the distance from the origin to the first point where the golden unit orbit produces an analytic obstruction: a pole for the reciprocal exponential and, after applying scalar logarithm, a branch point for the product exponential.
+
+If one now applies the ordinary analytic logarithm to the product exponential, one obtains
+\[
+    \log \Etw(x)=\sum_{k\ge0}\log(1+\ph^{-2-k}x).
+\]
+This is a useful analytic coordinate, but it is no longer the primitive object.  Expanding it gives
+\[
+    \log \Etw(x)
+    =\sum_{m\ge1}(-1)^{m+1}
+      \frac{\ph^{2-2m}}{m[m]_{\ph}}x^m.
+\]
+The denominators $m[m]_{\ph}$ record the cost of interpolating the integer unit index off the unit group.  The integer factor $m$ comes from ordinary analytic interpolation, while the golden factor $[m]_{\ph}$ comes from summing over the contraction orbit.  The regulator $\log\ph$ is the archimedean step-size of this interpolation.
+
+This is not a new logarithm in the classical sense.  The unit index, regulators, valuations, and $q$-products are classical objects.  The point here is their placement in the $\ph$-native hierarchy: logarithm is exact and denominator-free as an orbit index on the unit group; scalar analytic logarithm appears only after that index is extended away from the discrete orbit.  In the elliptic regime of the phase paper, the analogous index becomes cyclic, such as the $\Z/10\Z$ index of the golden phase; we leave that finite-order logarithmic picture for later work.
 
 \section{Integration as rate localization}
 
@@ -659,7 +805,7 @@ This calculus is not a replacement for ordinary infinitesimal differentiation.  
     x\mapsto \ph^{-1}x.
 \]
 
-The ordinary derivative appears in a different regime, where one studies a family of $q$-difference operators and lets $q\to1$.  Here $q$ is fixed at $\ph^{-1}$.  The fixed scale explains both the algebraic factor projection and the analytic behavior of the exponential.  Because the scale does not shrink to $1$, the weights do not grow like $n$; they approach $\ph^2$.  Consequently the exponential has finite radius.
+The ordinary derivative appears in a different regime, where one studies a family of $q$-difference operators and lets $q\to1$.  Here $q$ is fixed at $\ph^{-1}$.  The fixed scale explains both the algebraic factor projection and the analytic behavior of the exponentials.  Because the scale does not shrink to $1$, the weights do not grow like $n$; they approach $\ph^2$ at the selected real place.  Consequently, the reciprocal exponential has finite radius.  Meanwhile, the twist-compatible product exponential remains denominator-free at finite depth and becomes entire only after completion.  The same unit orbit controls the logarithmic boundary: poles occur on the positive orbit for the reciprocal exponential, and zeros/branch points occur on the negative orbit for the product exponential and its scalar logarithm.
 
 This is honesty, but it is also structure:
 \begin{quote}
@@ -680,7 +826,8 @@ Derivative quotient & Displacement factor projection \\
 Monomial weight $n$ & Bounded real-place weight $[n]_{\ph}\to\ph^2$ \\
 Ordinary product rule & Twisted $q$-Leibniz rule \\
 Ordinary chain rule & Two-stage factorization; clean rule only for $g(x)=cx$ \\
-Exponential $e^x$ entire & Golden exponential radius $\ph^2$ \\
+Exponential $e^x$ entire & Reciprocal exponential radius $\ph^2$; product exponential entire \\
+Logarithm as scalar function & Unit-orbit index on $\{\ph^k\}$; analytic interpolation off the group \\
 Integral coefficient $1/(n+1)$ & Rate localization at $[n+1]_{\ph}$ \\
 \bottomrule
 \end{tabular}
@@ -702,10 +849,14 @@ The answer is not automatic: diagonal Taylor expansion and contraction-orbit int
 \end{question}
 
 \begin{question}[Function spaces]
-Which function spaces beyond polynomials admit a natural golden derivative?  Power series inside the disk of radius $\ph^2$ are one candidate, but the correct analytic category remains to be determined.
+Which function spaces beyond polynomials admit a natural golden derivative?  Power series inside the disk of radius $\ph^2$ are one candidate for the reciprocal exponential, while the product exponential suggests entire functions built from contraction-orbit products.  The correct analytic category remains to be determined.
 \end{question}
 
-\begin{question}[Weight arithmetic]
+\begin{question}[Unit-index logarithms]
+Can the unit-index interpretation of logarithm be connected systematically to the analytic logarithm through archimedean completion and to valuations through non-archimedean completions?  In particular, can the radius $\ph^2$ of the reciprocal/product logarithmic obstructions be characterized entirely as the first obstruction along the golden unit orbit?
+\end{question}
+
+\begin{question}[Weight arithmetic and the Lucas semigroup]
 How do the elements
 \[
     [n]_{\ph}=\ph^2-\ph^{2-n}
@@ -721,8 +872,12 @@ factor in $\Z[\ph]$?  The unit classification above shows that only $n=1,2$ are 
 Thus the integration localization is controlled by the multiplicative semigroup generated by the golden weights, whose norms lie in a Lucas-number semigroup.  How does this ``Lucas semigroup'' relate to Lucas divisibility, ranks of apparition, and the splitting or ramification of rational primes in $\Q(\sqrt5)$?  The prime factorization behavior of these weights controls the arithmetic of golden integration.
 \end{question}
 
+\begin{question}[Two exponential layers]
+Can the reciprocal and product exponentials be characterized intrinsically as representing two universal properties: localization for $\dd E=E$, and completion for $\dd\mathcal E=\sig_{\ph}(\mathcal E)$?  How far does this layer distinction persist for other $q$-difference calculi?
+\end{question}
+
 \begin{question}[Golden differential equations]
-Which equations are naturally solved by the non-entire golden exponential $\Eph$?  How do their analytic properties differ from ordinary exponential equations?
+Which equations are naturally solved by the non-entire reciprocal exponential $\Eph$, and which are naturally solved by the entire product exponential $\Etw$?  How do their analytic properties differ from ordinary exponential equations?
 \end{question}
 
 \begin{question}[Deformation to ordinary calculus]
@@ -753,9 +908,13 @@ and forces the derivative weights into the closed form
 \[
     [n]_{\ph}=\ph^2-\ph^{2-n}.
 \]
-At the chosen real place, these weights are bounded and converge to $\ph^2$.  The associated exponential therefore has radius $\ph^2$ and is not entire.
+At the chosen real place, these weights are bounded and converge to $\ph^2$.  The associated reciprocal exponential therefore has radius $\ph^2$ and is not entire.
 
-Thus the fixed scale is not a defect to be hidden.  It is the source of the calculus.  The derivative is not born as a quotient; it is the shadow of a factor.
+The twisted product rule reveals the complementary exponential.  The equation $\dd E=E$ lands in the localization layer and produces a reciprocal product.  The equation $\dd\mathcal E=\sig_{\ph}(\mathcal E)$ lands first in the polynomial/completion layer and produces denominator-free finite products.  These are the two standard $q$-exponentials at the golden value $q=\ph^{-1}$, but the $\ph$-native hierarchy explains why they belong to different layers.
+
+The logarithmic story collapses to the same orbit.  On the unit group, logarithm is the exact index $\ord_{\ph}(\ph^k)=k$.  Off the group, scalar analytic logarithm is an interpolation of that index, and the denominators in its series record the cost of leaving the discrete orbit.  The radius $\ph^2$ is the nearest point of the same golden unit orbit: a pole for the reciprocal exponential, and a zero or logarithmic branch point for the product exponential.
+
+Thus the fixed scale is not a defect to be hidden.  It is the source of the calculus.  The derivative is not born as a quotient; it is the shadow of a factor, and logarithm is native first as an index before it is analytic as a function.
 
 \begin{thebibliography}{99}
 
