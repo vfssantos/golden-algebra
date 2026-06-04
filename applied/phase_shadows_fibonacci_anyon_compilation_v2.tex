@@ -1,0 +1,973 @@
+\documentclass[11pt]{article}
+
+\usepackage[a4paper,margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!55!black,
+  citecolor=blue!55!black,
+  urlcolor=blue!55!black,
+  pdftitle={Phase Shadows for Fibonacci Anyon Compilation},
+  pdfauthor={Vinicius Santos}
+}
+
+\newtheorem{definition}{Definition}[section]
+\newtheorem{theorem}[definition]{Theorem}
+\newtheorem{proposition}[definition]{Proposition}
+\newtheorem{lemma}[definition]{Lemma}
+\newtheorem{corollary}[definition]{Corollary}
+\newtheorem{remark}[definition]{Remark}
+\newtheorem{question}[definition]{Question}
+
+\newcommand{\ph}{\varphi}
+\newcommand{\Z}{\mathbb Z}
+\newcommand{\Q}{\mathbb Q}
+\newcommand{\C}{\mathbb C}
+\newcommand{\A}{\mathcal A}
+\newcommand{\B}{\mathsf B}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\Nm}{\operatorname{N}}
+\newcommand{\Sp}{\operatorname{Sp}}
+\newcommand{\End}{\operatorname{End}}
+\newcommand{\Mat}{\operatorname{Mat}}
+\newcommand{\rank}{\operatorname{rank}}
+\newcommand{\err}{\operatorname{err}}
+\newcommand{\sig}{\sigma}
+\newcommand{\Eph}{E_{\ph}}
+\newcommand{\Etw}{\mathcal E_{\ph}}
+\newcommand{\dd}{\partial_{\ph}}
+\newcommand{\Del}{\Delta_{\ph}}
+\newcommand{\Cph}{C_{\ph}}
+\newcommand{\shadow}{\mathsf C}
+\newcommand{\Proj}{\mathbb P}
+
+\title{Phase Shadows for Fibonacci Anyon Compilation\\
+\large A $\ph$-Native Projective Search Framework}
+\author{Vinicius Santos\\
+\small Exploratory manuscript draft}
+\date{June 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Fibonacci anyon braid compilation is usually expressed as numerical search over complex braid matrices.  This paper develops a $\ph$-native alternative.  The braid phases are represented exactly by a decagonal phase object $U$ satisfying
+\[
+    U^2-\ph U+1=0,
+\]
+while the nontrivial Fibonacci $F$-move is represented by a signature-lift generator $s$ satisfying
+\[
+    s^2=\ph-1.
+\]
+Thus Fibonacci braid matrices live over the exact phase-signature algebra
+\[
+    \A_\ph=\Z[\ph,U,s]/(U^2-\ph U+1,\;s^2-\ph+1).
+\]
+No classical exponential, angle, square root, absolute value, or division is primitive in this search layer.  Those operations appear only after choosing an analytic evaluation layer.
+
+The paper's main object is the projective phase shadow of a braid matrix.  Global phase is treated as a relation,
+\[
+    N=\lambda M,\qquad \lambda\bar\lambda=1,
+\]
+not as normalization by quotient.  The invariant content is captured by phase-correlation shadows
+\[
+    \shadow_M(a,b)=M_a\overline{M_b},
+\]
+where $a,b$ range over matrix slots.  These shadows use only multiplication and involution in the exact algebra.  We prove that projective equivalence is compatible with braid-generator expansion and that depth-bounded search over exact projective representatives is complete for projective target compilation.
+
+Computational experiments support the resulting search picture.  In the three-anyon qubit representation, projective half-library search reduces a bidirectional library from $1457$ words to $360$ exact projective states and gives an end-to-end speedup against a numerical bidirectional baseline for the $H$ and $T$ targets.  In the four-anyon three-dimensional representation, the same quotient structure compresses the search and supports target-directed beam compilation, though exact-arithmetic overhead remains significant.  The contribution is not a new anyon model, but a native search space: Fibonacci braid compilation by exact phase shadows.
+\end{abstract}
+
+\tableofcontents
+
+\section{Introduction}
+
+Fibonacci anyons provide one of the simplest nonabelian settings in which braiding acts by nontrivial unitary transformations.  A braid word $w$ determines a matrix
+\[
+    \rho(w)\in U(d)
+\]
+on a fusion space, and compilation asks for a word whose induced matrix approximates a target operation $V$ up to global phase.
+
+The usual computational route moves immediately to complex numbers.  One writes the Fibonacci $R$-symbols as complex phases, the $F$-move using a square root, and then compares matrices by a numerical projective score such as
+\[
+    \err(U,V)=1-\frac{|\Tr(V^\dagger U)|}{d}.
+\]
+This is effective, but it compresses several distinct layers into one analytic representation:
+\[
+    \text{phase},\quad
+    \text{root/signature},\quad
+    \text{matrix action},\quad
+    \text{global-phase equivalence},\quad
+    \text{target scoring}.
+\]
+
+The goal of this paper is to separate these layers.  The guiding rule is inherited from the companion $\ph$-native manuscripts:
+
+\begin{quote}
+Operations that appear primitive in classical notation often become projections, relations, localizations, factor projections, or lift requests in a native algebraic presentation.
+\end{quote}
+
+In this paper:
+\[
+    \text{phase comes before angle,}
+\]
+\[
+    \text{signature comes before radical,}
+\]
+\[
+    \text{relation comes before quotient,}
+\]
+and
+\[
+    \text{analytic scoring comes after exact algebraic search.}
+\]
+
+The resulting object is an exact projective quotient graph of braid states.  The vertices are not braid words and not floating-point matrices.  They are exact projective phase shadows.  Since projective equivalence is preserved by multiplying by braid generators, once two words reach the same shadow their future search subtrees are duplicates.  This gives a lossless quotient search for depth-bounded projective compilation.
+
+\subsection*{Main contributions}
+
+\begin{enumerate}[label=(\roman*)]
+    \item We formulate Fibonacci braid matrices over the exact phase-signature algebra
+    \[
+        \A_\ph=\Z[\ph,U,s]/(U^2-\ph U+1,\;s^2-\ph+1).
+    \]
+    \item We define global phase relationally:
+    \[
+        M\sim N
+        \quad\Longleftrightarrow\quad
+        N=\lambda M,\ \lambda\bar\lambda=1,
+    \]
+    rather than by choosing a scalar quotient or normalized representative.
+    \item We define the projective phase-correlation shadow
+    \[
+        \shadow_M(a,b)=M_a\overline{M_b}.
+    \]
+    This is invariant under norm-one global phase and uses only native multiplication and involution.
+    \item We prove that the full phase-correlation shadow is a complete projective invariant for nonzero matrices in the phase-comparison layer.
+    \item We prove that projective equivalence is a congruence for braid-generator expansion.
+    \item We prove that depth-bounded search over exact projective representatives is complete for projective target scoring.
+    \item We give experimental evidence for search-space collapse, memoized search, beam search, and bidirectional half-library search in the $n=3$ and $n=4$ Fibonacci representations.
+\end{enumerate}
+
+\subsection*{What is not claimed}
+
+The paper does not claim a new Fibonacci category, a new universal gate set, or a universal wall-clock speedup over all classical compilers.  The Fibonacci data are standard.  The claim is narrower and cleaner: the $\ph$-native exact representation exposes a target-independent projective quotient graph, and search over that graph is complete for projective compilation while often being much smaller than the reduced-word tree.
+
+
+\section{Related work and positioning}
+
+The exact use of algebraic number systems in quantum compilation is well established.  In the Clifford+$T$ setting, Kliuchnikov, Maslov, and Mosca identify exactly synthesizable single-qubit unitaries with matrices over the ring
+\[
+    \Z[1/\sqrt2,i],
+\]
+and give an efficient exact synthesis algorithm for that setting \cite{KliuchnikovMaslovMosca2012}.  Ross and Selinger develop optimal or near-optimal ancilla-free Clifford+$T$ approximation algorithms for single-qubit $z$-rotations, with polylogarithmic expected runtime under standard assumptions \cite{RossSelinger2014}.  Later exact-synthesis work extends this number-theoretic program to other Clifford-cyclotomic gate sets \cite{ForestGossetKliuchnikovMcKinnon2015}.
+
+Topological quantum compiling for Fibonacci anyons also has a substantial literature.  Bonesteel, Hormozi, Zikos, and Simon study explicit braid topologies and Solovay--Kitaev-style improvement for Fibonacci anyon gates \cite{BonesteelHormoziZikosSimon2005,HormoziZikosBonesteelSimon2007}.  The broader mathematical and computational background for Fibonacci anyons, modular tensor categories, and topological quantum computation is treated in standard sources \cite{Kitaev2003,FreedmanKitaevLarsenWang2003,WangBook,PreskillNotes}.
+
+The present paper is not claiming that exact arithmetic, projective compilation, or Fibonacci braid search are new in themselves.  The narrower contribution is a division-free, $\ph$-native projective-shadow quotient for Fibonacci braid search.  The phase-correlation shadow
+\[
+    \shadow_M(a,b)=M_a\overline{M_b}
+\]
+gives an exact equality oracle for projective braid states without choosing numerical tolerances or normalizing by a pivot.  This yields a target-independent quotient graph for braid search.  The empirical contribution is to show that this quotient graph can reduce search and, in the three-anyon qubit case, improve wall-clock time even against a bounded bidirectional numerical baseline.
+
+
+\section{Native layer discipline}
+
+The companion manuscripts establish a hierarchy of roles.  Scalar arithmetic begins with the golden leaf and the operation
+\[
+    \B(x,y)=xy-y.
+\]
+Mixed addition appears as trace projection from a pair layer.  Quotients split into unit action, rate localization, quotient relation, approximation, normalization constraint, and factor projection.  Trigonometry begins from norm-one phase objects, with unnormalized trace and spread shadows.  Calculus begins not with quotient limits, but with divisibility and factor projection.
+
+This paper follows the same discipline.  The native objects used in the search layer are:
+\[
+    \ph,\quad U,\quad s,\quad \bar{(\cdot)},\quad
+    \text{matrix multiplication},\quad
+    \shadow_M(a,b)=M_a\overline{M_b}.
+\]
+The following are not primitive in the search layer:
+\[
+    e,\quad \pi,\quad i,\quad \sqrt{\cdot},\quad
+    |\cdot|,\quad \frac{\cdot}{\cdot}.
+\]
+They may appear only after an analytic embedding or in a completion layer.
+
+\subsection{Phase before angle}
+
+A norm-one phase object is a unit $U$ equipped with an involution such that
+\[
+    U^\sig=U^{-1},
+    \qquad
+    \Nm(U)=UU^\sig=1.
+\]
+Its native projections are unnormalized:
+\[
+    T(U)=U+U^{-1},
+    \qquad
+    S(U)=U-U^{-1}.
+\]
+The classical formulas
+\[
+    2\cos\theta=T(U),
+    \qquad
+    2i\sin\theta=S(U)
+\]
+belong to a later analytic coordinate layer.
+
+The golden phase used here is defined by the trace-lift relation
+\[
+    U+U^{-1}=\ph,
+\]
+or equivalently
+\[
+    U^2-\ph U+1=0.
+\]
+This implies the decagonal torsion relation
+\[
+    U^5=-1,\qquad U^{10}=1.
+\]
+The expression $U=e^{i\pi/5}$ is an analytic embedding of this phase relation, not its definition.
+
+\subsection{Signature before radical}
+
+The Fibonacci $F$-move contains a quantity classically written as $\ph^{-1/2}$.  In the native layer this is not a scalar square root.  It is a signature lift:
+\[
+    s^2=\ph^{-1}=\ph-1.
+\]
+The symbol $s$ records a root-lift request in the phase-signature algebra.  It may later be represented by a positive real square root under a chosen real embedding, but that is not part of the exact braid-search layer.
+
+\subsection{Relation before quotient}
+
+Global phase is usually removed by normalization.  A native quotient discipline instead represents projective equivalence as a relation:
+\[
+    N=\lambda M,
+    \qquad
+    \lambda\bar\lambda=1.
+\]
+No pivot division is required in the theorem.  Pivot signatures are useful implementation devices, but the conceptual invariant is the cross-product shadow
+\[
+    M_a\overline{M_b}.
+\]
+
+\subsection{Twisted completion before classical exponential}
+
+The exact finite braid theory in this paper does not require an exponential.  If a native analytic completion is needed, the preferred object is the twisted $\ph$-product exponential
+\[
+    \Etw(x)=\prod_{k\ge0}(1+\ph^{-2-k}x),
+\]
+whose finite approximants lie in $\Z[\ph][x]$.  By contrast, classical exponentials and circular coordinates enter after choosing a continuous analytic embedding.  This distinction is essential: the algebraic torsion relation
+\[
+    U^{10}=1
+\]
+does not require $\pi$.
+
+\section{Fibonacci anyons over the phase-signature algebra}
+
+\subsection{Fusion paths}
+
+The Fibonacci category has simple labels
+\[
+    1,\tau
+\]
+with fusion rule
+\[
+    \tau\otimes\tau=1\oplus\tau.
+\]
+For $n$ $\tau$-anyons, a left-associated fusion path is written
+\[
+    x_0=1,\quad x_1=\tau,\quad x_2,\ldots,x_n=t,
+\]
+where $t$ is the total charge and each adjacent fusion is admissible.
+
+The computations below focus on total charge $\tau$.  For $n=3$, the fusion space has dimension $2$.  For $n=4$, it has dimension $3$.
+
+\subsection{The coefficient algebra}
+
+Define
+\[
+    \A_\ph
+    =
+    \Z[\ph,U,s]/(U^2-\ph U+1,\;s^2-\ph+1).
+\]
+Every coefficient has normal form
+\[
+    A+Bs,
+    \qquad
+    A,B\in\Z[\ph,U],
+\]
+and every element of $\Z[\ph,U]$ has normal form
+\[
+    a+b\ph+cU+d\ph U.
+\]
+Thus a coefficient is represented by eight integers.
+
+Define the involution by
+\[
+    \bar\ph=\ph,\qquad \bar s=s,\qquad \bar U=U^{-1}=\ph-U.
+\]
+This is the phase involution used for norms and shadows.
+
+\subsection{The $F$- and $R$-data}
+
+In the basis where the intermediate fusion channel is $1$ or $\tau$, the nontrivial Fibonacci $F$-move is
+\[
+    F=
+    \begin{pmatrix}
+    \ph^{-1} & s\\
+    s & -\ph^{-1}
+    \end{pmatrix}
+    =
+    \begin{pmatrix}
+    \ph-1 & s\\
+    s & 1-\ph
+    \end{pmatrix}.
+\]
+The braid phases are represented natively as
+\[
+    R^{\tau\tau}_1=U^{-4}=-U,
+\]
+and
+\[
+    R^{\tau\tau}_{\tau}=U^3=\ph U-\ph.
+\]
+No complex exponential is needed to define these symbols.
+
+\subsection{Three-anyon braid generators}
+
+For $n=3$ and total charge $\tau$, the braid generators are
+\[
+    \sigma_1=
+    \begin{pmatrix}
+    -U & 0\\
+    0 & \ph U-\ph
+    \end{pmatrix},
+\]
+and
+\[
+    \sigma_2=FRF.
+\]
+Explicitly,
+\[
+    \sigma_2=
+    \begin{pmatrix}
+    -1-U+\ph U & (1-\ph U)s\\
+    (1-\ph U)s & 1-\ph
+    \end{pmatrix}.
+\]
+
+\subsection{Arbitrary $n$}
+
+For arbitrary $n$, each braid generator acts locally on the fusion path.  The generator $\sigma_1$ acts diagonally on the first nontrivial intermediate channel.  For $i\ge2$, the generator $\sigma_i$ changes only the local intermediate label $x_i$ and is computed by the same local $FRF$ move.
+
+The representation satisfies the braid relations exactly over $\A_\ph$:
+\[
+    \sigma_i\sigma_j=\sigma_j\sigma_i
+    \qquad(|i-j|\ge2),
+\]
+and
+\[
+    \sigma_i\sigma_{i+1}\sigma_i
+    =
+    \sigma_{i+1}\sigma_i\sigma_{i+1}.
+\]
+
+\section{Phase-correlation shadows}
+
+\subsection{Projective equivalence as a relation}
+
+\begin{definition}[Projective phase relation]
+Let $M,N\in\Mat_d(\A_\ph)$.  We say that $M$ and $N$ are projectively phase-equivalent, written
+\[
+    M\sim N,
+\]
+if there exists a unit $\lambda$ in the appropriate phase completion such that
+\[
+    N=\lambda M
+    \qquad\text{and}\qquad
+    \lambda\bar\lambda=1.
+\]
+\end{definition}
+
+This is a relation, not a quotient operation.  It says that $N$ is obtained from $M$ by a norm-one global phase action.
+
+\subsection{Cross-product shadows}
+
+Flatten the entries of $M$ into slots $M_a$, where $a$ ranges over $d^2$ matrix positions.
+
+\begin{definition}[Phase-correlation shadow]
+The phase-correlation shadow of $M$ is the family
+\[
+    \shadow_M(a,b)=M_a\overline{M_b}.
+\]
+\end{definition}
+
+This is the native projective invariant.  It uses multiplication and involution only.
+
+\begin{theorem}[Projective invariance of phase shadows]
+If $M\sim N$, then
+\[
+    \shadow_M=\shadow_N.
+\]
+\end{theorem}
+
+\begin{proof}
+Since $M\sim N$, there is a unit $\lambda$ such that $N=\lambda M$ and $\lambda\bar\lambda=1$.  Therefore for all slots $a,b$,
+\[
+    \shadow_N(a,b)
+    =
+    N_a\overline{N_b}
+    =
+    \lambda M_a\,\overline{\lambda M_b}
+    =
+    \lambda M_a\,\bar\lambda\,\overline{M_b}
+    =
+    \lambda\bar\lambda\,M_a\overline{M_b}
+    =
+    \shadow_M(a,b).
+\]
+\end{proof}
+
+\begin{theorem}[Completeness of nonzero phase shadows]
+Let $M,N\in\Mat_d(\A_\ph)$ be nonzero matrices.  Suppose their full phase-correlation shadows agree:
+\[
+    \shadow_M(a,b)=\shadow_N(a,b)
+    \qquad
+    \text{for all slots }a,b.
+\]
+Then $M$ and $N$ are projectively phase-equivalent in the phase-comparison layer:
+\[
+    M\sim N.
+\]
+\end{theorem}
+
+\begin{proof}
+Choose a slot $b$ with $M_b\ne0$.  Since
+\[
+    M_b\overline{M_b}=N_b\overline{N_b},
+\]
+and the left side is nonzero, $N_b$ is also nonzero in the same comparison layer.  Introduce the rate relation $\lambda$ determined by
+\[
+    N_b=\lambda M_b.
+\]
+This is not a primitive quotient in the native layer; it is a comparison relation in the fraction/rate completion generated by the nonzero slot $M_b$.
+
+Now fix any slot $a$.  Equality of shadows gives
+\[
+    M_a\overline{M_b}
+    =
+    N_a\overline{N_b}.
+\]
+Using $N_b=\lambda M_b$, this becomes
+\[
+    M_a\overline{M_b}
+    =
+    N_a\overline{\lambda M_b}
+    =
+    N_a\bar\lambda\,\overline{M_b}.
+\]
+Since $\overline{M_b}$ is nonzero in the same comparison layer, cancellation as a factor relation gives
+\[
+    M_a=N_a\bar\lambda.
+\]
+Equivalently,
+\[
+    N_a=\lambda M_a
+\]
+after multiplying by $\lambda$ once we show $\lambda\bar\lambda=1$.
+
+That norm-one condition follows from the $b,b$ shadow:
+\[
+    M_b\overline{M_b}
+    =
+    N_b\overline{N_b}
+    =
+    \lambda M_b\,\bar\lambda\,\overline{M_b}
+    =
+    \lambda\bar\lambda\,M_b\overline{M_b}.
+\]
+Cancelling the nonzero factor $M_b\overline{M_b}$ gives
+\[
+    \lambda\bar\lambda=1.
+\]
+Thus $N_a=\lambda M_a$ for every slot $a$, with $\lambda$ norm-one, so $M\sim N$.
+\end{proof}
+
+\begin{corollary}[Full shadows classify nonzero projective states]
+For nonzero matrices over the phase-comparison layer,
+\[
+    M\sim N
+    \qquad\Longleftrightarrow\qquad
+    \shadow_M=\shadow_N.
+\]
+\end{corollary}
+
+\subsection{Pivot signatures as an implementation shadow}
+
+The full shadow contains $d^4$ entries.  For implementation, choose a deterministic nonzero pivot slot $p$ and record
+\[
+    \Pi(M)=\bigl(\operatorname{pos}(p),\{M_a\overline p\}_a\bigr).
+\]
+This is a compact phase-correlation shadow relative to a visible slot.  The theorem is stated using full cross-products; pivot signatures are an efficient implementation device.
+
+\begin{proposition}[Completeness of deterministic pivot signatures]
+Let $M,N$ be nonzero matrices, and let $p_M,p_N$ be the deterministic pivot slots chosen by the same pivot rule.  If
+\[
+    \Pi(M)=\Pi(N),
+\]
+then $M\sim N$.
+Conversely, if $M\sim N$ and the global phase action preserves the zero pattern, then the deterministic pivot rule selects the same slot and
+\[
+    \Pi(M)=\Pi(N).
+\]
+\end{proposition}
+
+\begin{proof}
+Equality of pivot signatures gives the same pivot position and
+\[
+    M_a\overline{p_M}=N_a\overline{p_N}
+\]
+for every slot $a$.  The argument of the preceding completeness theorem applies with the pivot slot in place of $b$: the relation $p_N=\lambda p_M$ determines a norm-one phase relation, and the displayed identities force $N_a=\lambda M_a$ for all slots.  Hence $M\sim N$.
+
+Conversely, if $N=\lambda M$ with $\lambda\bar\lambda=1$, then $M$ and $N$ have the same zero pattern.  A deterministic pivot rule therefore selects the same slot.  The products $M_a\overline p$ are unchanged by the norm-one global phase, so the pivot signatures agree.
+\end{proof}
+
+\begin{remark}
+The pivot signature does not introduce division by $p$.  It records products $M_a\overline p$, not normalized coordinates $M_a/p$.  Thus it is compatible with the native quotient discipline: the proof uses a rate relation only in the comparison layer.
+\end{remark}
+
+\section{Projective quotient search}
+
+\subsection{The reduced-word tree}
+
+Let $W_L$ be the set of reduced braid words of length at most $L$ in the generators $\sigma_i^{\pm1}$.  Ordinary exhaustive search scores every word in $W_L$.
+
+Let
+\[
+    Q_L=\bar\rho(W_L)
+\]
+be the set of exact projective braid states reached by words of length at most $L$, where $\bar\rho$ denotes the braid representation modulo global phase.
+
+Clearly,
+\[
+    |Q_L|\le |W_L|.
+\]
+The inequality is strict whenever two distinct reduced words induce the same projective state.
+
+\subsection{Expansion compatibility}
+
+\begin{theorem}[Projective equivalence is expansion-compatible]
+If $M\sim N$, then for every braid generator $G$,
+\[
+    GM\sim GN.
+\]
+\end{theorem}
+
+\begin{proof}
+If $N=\lambda M$ with $\lambda\bar\lambda=1$, then
+\[
+    GN=G(\lambda M)=\lambda GM.
+\]
+Thus $GM$ and $GN$ differ by the same norm-one global phase.
+\end{proof}
+
+\begin{corollary}[Duplicate subtrees]
+If two braid words reach the same exact projective state, then all future left-expansions of those words are projectively duplicate.
+\end{corollary}
+
+\subsection{Depth-bounded completeness}
+
+\begin{definition}[Projective target score]
+A target score $S(U,V)$ is projective in its first argument if
+\[
+    S(\lambda U,V)=S(U,V)
+\]
+whenever $\lambda\bar\lambda=1$.
+\end{definition}
+
+The analytic score used in the experiments is
+\[
+    \err(U,V)=1-\frac{|\Tr(V^\dagger U)|}{d}.
+\]
+This score belongs to the analytic evaluation layer after embedding $\A_\ph$ into $\C$.
+
+\begin{theorem}[Completeness of projective quotient search]
+Let $S$ be any projective target score.  Then
+\[
+    \min_{w\in W_L}S(\rho(w),V)
+    =
+    \min_{q\in Q_L}S(q,V).
+\]
+Thus searching one representative per exact projective class is lossless for depth-bounded projective compilation.
+\end{theorem}
+
+\begin{proof}
+Every $q\in Q_L$ is represented by at least one word $w\in W_L$, so the right-hand minimum is attained among values appearing on the left.  Conversely, every word $w\in W_L$ maps to a projective class $q=\bar\rho(w)\in Q_L$, and $S$ is constant on that class.  Hence the two minima coincide.
+\end{proof}
+
+\subsection{Bidirectional pair reduction}
+
+For bidirectional search with half-depth $h$, a word-level half-library has size $|W_h|$ and a pair search has
+\[
+    |W_h|^2
+\]
+candidate products.  A projective half-library has size $|Q_h|$, so the pair count becomes
+\[
+    |Q_h|^2.
+\]
+The ceteris paribus structural reduction factor is
+\[
+    \left(\frac{|W_h|}{|Q_h|}\right)^2.
+\]
+This is the theorem-level advantage.  It is independent of implementation speed.
+
+
+\section{Growth question}
+
+The projective quotient theorem gives a ceteris paribus reduction from $W_L$ to $Q_L$, but it does not by itself determine the asymptotic size of $Q_L$.  In particular, density of the braid image in a projective unitary group does not imply that exact projective collisions have polynomial growth, nor does it exclude substantial finite-depth collapse.
+
+The experiments in this paper should therefore be read as finite-depth evidence.  The central open growth problem is to estimate
+\[
+    |Q_L|
+\]
+as a function of $L$, $n$, and the chosen total charge.  A strong future result would be an upper bound on $|Q_L|$ below the reduced-word growth rate, or a structural description of the kernel and projective relations responsible for the observed collapse.  The present paper proves the lossless quotient principle and measures its effect; it does not claim an asymptotic complexity theorem for $|Q_L|$.
+
+
+\section{Algorithms}
+
+\subsection{Exact projective memoized search}
+
+\begin{enumerate}[label=\arabic*.]
+    \item Start from the identity matrix.
+    \item Compute its projective phase shadow.
+    \item Expand by braid generators.
+    \item Compute each child shadow exactly.
+    \item If the shadow has appeared, discard the child.
+    \item Otherwise store it as a representative and continue.
+\end{enumerate}
+
+This builds a quotient graph of exact projective states.
+
+\subsection{Target-directed beam search}
+
+Beam search uses the same exact duplicate test but does not expand the full quotient graph.  At each depth, it keeps only the $B$ states with lowest target error.
+
+This is not complete, but it is useful for approximate compilation.  The native layer provides exact duplicate rejection; the analytic layer provides heuristic ranking.
+
+\subsection{Bidirectional projective search}
+
+A bidirectional search builds a half-library $Q_h$ and scores products
+\[
+    AB,
+    \qquad A,B\in Q_h.
+\]
+The same projective half-library can be reused across many targets.
+
+\section{Experiments}
+
+The experiments are prototypes.  Their purpose is to test the quotient-search structure, not to claim superiority over all optimized compilers.
+
+\subsection{$n=3$, direct projective memoization}
+
+For $n=3$, total charge $\tau$, the fusion space has dimension $2$.  At depth $12$, direct reduced-word search contains $1{,}062{,}881$ cumulative words.  Exact projective memoization visits $16{,}704$ projective states, a compression factor of $63.63$.
+
+In the single-Hadamard test, memoized exact search was faster than direct numerical enumeration at depth $12$.
+
+\subsection{$n=3$, multi-target search}
+
+The same exact projective graph was reused for targets
+\[
+    H,\ X,\ Z,\ S,\ T.
+\]
+At depth $12$, the multi-target numerical baseline took approximately $36{,}018$ ms, while the memoized exact projective search took approximately $3{,}506$ ms, a speedup of about $10.27$ in the prototype.
+
+This is the clearest empirical sign that the target-independent quotient graph matters.
+
+\subsection{$n=4$, exhaustive projective search}
+
+For $n=4$, total charge $\tau$, the fusion space has dimension $3$.  The exact projective quotient still compresses the reduced-word tree, but the generic exact implementation was initially slower than numerical enumeration.
+
+An optimized tuple implementation at depth $7$ compressed $117{,}187$ cumulative reduced words to $15{,}735$ projective states, but still did not beat numerical enumeration end-to-end.
+
+\subsection{$n=4$, target-directed beam search}
+
+For reachable $3\times 3$ braid-generated targets, bounded exact projective beam search recovered exact zero-error representatives using small beams.  With beam width $16$, three test targets of lengths $3$, $5$, and $6$ were recovered exactly while visiting only hundreds of states.
+
+\begin{center}
+\begin{tabular}{lrrrr}
+\toprule
+Target & target length & exact depth & visited states & runtime ms \\
+\midrule
+A & 3 & 3 & 37 & 10.5 \\
+C & 5 & 5 & 194 & 51.9 \\
+D & 6 & 6 & 273 & 70.1 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\subsection{$n=4$, approximate compilation}
+
+Non-braid-native targets were also tested:
+\[
+    F_3,\quad
+    \text{DIAG\_PHASE},\quad
+    \text{EMBED\_H},\quad
+    \text{RANDOM\_QR}.
+\]
+At beam width $128$ and depth $10$, the best observed errors were:
+
+\begin{center}
+\begin{tabular}{lrrl}
+\toprule
+Target & best error & depth & best word length \\
+\midrule
+DIAG\_PHASE & $0.0169366$ & 4 & 3 \\
+EMBED\_H & $0.0879488$ & 10 & 10 \\
+$F_3$ & $0.0956652$ & 8 & 8 \\
+RANDOM\_QR & $0.0929551$ & 10 & 10 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+These results show approximation behavior, not optimality.
+
+\subsection{Bidirectional benchmark}
+
+The strongest baseline tested here is bidirectional half-library search.
+
+For $n=3$, half-depth $6$, the word-level numerical half-library had $1457$ states.  The exact projective half-library had $360$ states.  Pair count was reduced by
+\[
+    \left(\frac{1457}{360}\right)^2\approx 16.38.
+\]
+The exact projective method beat the numerical bidirectional baseline for the $H$ and $T$ targets.
+
+\begin{center}
+\begin{tabular}{lrrrrrr}
+\toprule
+Case & Target & word half & proj half & pair reduction & num ms & exact ms \\
+\midrule
+$n=3,d=2$ & $H$ & 1457 & 360 & 16.38 & 67.2 & 38.9 \\
+$n=3,d=2$ & $T$ & 1457 & 360 & 16.38 & 65.7 & 38.8 \\
+$n=4,d=3$ & $F_3$ & 187 & 131 & 2.04 & 5.3 & 25.0 \\
+$n=4,d=3$ & EMBED\_H & 187 & 131 & 2.04 & 5.2 & 25.0 \\
+$n=4,d=3$ & RANDOM\_QR & 187 & 131 & 2.04 & 5.2 & 25.0 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Thus the apples-to-apples structural theorem is visible in both cases, but wall-clock advantage appears only in the $n=3$ prototype.
+
+\section{Interpretation}
+
+The theorem-level result is not a runtime theorem, and it is not yet an asymptotic growth theorem.  It is a search-space quotient theorem.
+
+Ceteris paribus, if equality testing and target scoring are held fixed as abstract costs, projective quotient search never evaluates more projective states than word-level search.  In bidirectional form, the pair-count reduction is quadratic in the half-library compression.
+
+The $\ph$-native contribution is the exact equality oracle.  Instead of asking numerically whether
+\[
+    M\approx \lambda N,
+\]
+we compute exact phase shadows in $\A_\ph$ and compare integer normal forms.
+
+The empirical results suggest three regimes:
+
+\begin{enumerate}[label=(\roman*)]
+    \item In $n=3,d=2$, projective collapse is strong enough that exact search can beat numerical baselines.
+    \item In $n=4,d=3$, the quotient still exists and compresses the search, but exact matrix arithmetic is more expensive.
+    \item Target-directed search makes the $n=4$ quotient practically useful even before exhaustive exact enumeration becomes competitive.
+\end{enumerate}
+
+\section{Limitations}
+
+The present draft has several limitations.
+
+First, the exact arithmetic kernels are prototypes.  Higher-dimensional fusion spaces require better sparse representations, better hashing, and more careful coefficient management.
+
+Second, beam search is incomplete.  It can recover good candidates quickly, but it does not replace the completeness theorem for full projective quotient search.
+
+Third, the experiments compare against direct numerical enumeration and bounded bidirectional baselines, not state-of-the-art anyon compilers.
+
+Fourth, empirical compression rates are not yet theoretically bounded.  Understanding the growth of
+\[
+    |Q_L|
+\]
+as a function of $L$ and $n$ is a central open question.
+
+\section{Future work}
+
+The next steps are:
+
+\begin{enumerate}[label=(\roman*)]
+    \item develop smaller complete shadows or certified two-stage signatures that retain the completeness of the full phase-correlation shadow;
+    \item develop sparse exact kernels for $n>4$;
+    \item combine projective half-libraries with beam search;
+    \item study coefficient-growth bounds in $\A_\ph$;
+    \item benchmark against established braid compilation methods;
+    \item extend the framework to other modular tensor categories;
+    \item investigate whether twisted $\ph$-completion objects such as $\Etw$ can define native continuous-flow targets.
+\end{enumerate}
+
+\section{Conclusion}
+
+Fibonacci braid compilation need not begin as numerical search over complex matrices.  The braid phases are already exact phase objects.  The $F$-move is already a signature lift.  Global phase is already a norm-one relation.  The projective content of a braid matrix is already visible in its phase-correlation shadow
+\[
+    \shadow_M(a,b)=M_a\overline{M_b}.
+\]
+
+The resulting search space is not the reduced-word tree but its exact projective quotient graph.  Searching this graph is complete for depth-bounded projective compilation, and in tested regimes it is substantially smaller than the word tree.  In the three-anyon qubit representation, this structure produces wall-clock speedups even against a bidirectional baseline.  In the four-anyon representation, it still compresses the search and supports target-directed compilation, though exact arithmetic remains the bottleneck.
+
+The native lesson is concise:
+
+\[
+    \boxed{\text{Do not search braid words when many words cast the same phase shadow.}}
+\]
+
+\appendix
+
+\section{Layer dictionary}
+
+\begin{center}
+\small
+\begin{tabular}{p{0.26\linewidth}p{0.31\linewidth}p{0.31\linewidth}}
+\toprule
+Classical object & Native replacement & Layer \\
+\midrule
+$e^{i\theta}$ & norm-one phase $U$ & phase \\
+$\theta,\pi$ & orbit coordinate or analytic completion & evaluation/completion \\
+$2\cos\theta$ & trace $U+U^{-1}$ & phase shadow \\
+$2i\sin\theta$ & spread $U-U^{-1}$ & phase shadow \\
+$\sqrt{\ph^{-1}}$ & signature lift $s^2=\ph-1$ & signature \\
+quotient $u/v$ & relation $u=qv$ & relation/rate \\
+projective normalization & $N=\lambda M,\lambda\bar\lambda=1$ & phase relation \\
+normalized matrix invariant & $M_a\overline{M_b}$ & phase-correlation shadow \\
+target score & complex embedding and trace norm & analytic evaluation \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\section{Pseudocode}
+
+\subsection*{Projective memoized BFS}
+
+\begin{verbatim}
+seen = { shadow(identity) }
+frontier = { identity }
+
+for depth in 1..L:
+    next_frontier = {}
+    for M in frontier:
+        for G in braid_generators:
+            N = G*M
+            c = shadow(N)
+            if c in seen:
+                continue
+            seen.add(c)
+            next_frontier.add(N)
+    frontier = next_frontier
+\end{verbatim}
+
+\subsection*{Projective beam search}
+
+\begin{verbatim}
+seen = { shadow(identity) }
+beam = { identity }
+
+for depth in 1..L:
+    candidates = {}
+    for M in beam:
+        for G in braid_generators:
+            N = G*M
+            c = shadow(N)
+            if c in seen:
+                continue
+            seen.add(c)
+            candidates.add(N)
+    score candidates in analytic layer
+    beam = best B candidates
+\end{verbatim}
+
+\section{References}
+
+\begin{thebibliography}{99}
+
+\bibitem{SantosGolden}
+V. Santos.
+\newblock \emph{A Golden Shadow Algebra: From a $\ph$-Leaf Scalar Core to Conjugate-Pair Arithmetic}.
+\newblock Exploratory manuscript, 2026.
+
+\bibitem{SantosQuotients}
+V. Santos.
+\newblock \emph{Quotients Without Division: Unit Actions, Relations, and Factor Projections in a $\ph$-Native Algebra}.
+\newblock Exploratory manuscript, 2026.
+
+\bibitem{SantosTrigonometry}
+V. Santos.
+\newblock \emph{Shadow Trigonometry: Norm-One Orbits, Golden Traces, and Cyclotomic Phase}.
+\newblock Exploratory manuscript, 2026.
+
+\bibitem{SantosRoots}
+V. Santos.
+\newblock \emph{Signatures Before Roots}.
+\newblock Exploratory manuscript, 2026.
+
+\bibitem{SantosCalculus}
+V. Santos.
+\newblock \emph{Factors Before Quotients: Golden Difference Calculus, Bounded Derivative Weights, and Two Exponential Layers}.
+\newblock Exploratory manuscript, 2026.
+
+\bibitem{KliuchnikovMaslovMosca2012}
+V. Kliuchnikov, D. Maslov, and M. Mosca.
+\newblock Fast and efficient exact synthesis of single-qubit unitaries generated by Clifford and $T$ gates.
+\newblock \emph{Quantum Information \& Computation}, 13(7--8):607--630, 2013.
+\newblock arXiv:1206.5236.
+
+\bibitem{RossSelinger2014}
+N. J. Ross and P. Selinger.
+\newblock Optimal ancilla-free Clifford+$T$ approximation of $z$-rotations.
+\newblock \emph{Quantum Information \& Computation}, 16(11--12):901--953, 2016.
+\newblock arXiv:1403.2975.
+
+\bibitem{ForestGossetKliuchnikovMcKinnon2015}
+S. Forest, D. Gosset, V. Kliuchnikov, and D. McKinnon.
+\newblock Exact synthesis of single-qubit unitaries over Clifford-cyclotomic gate sets.
+\newblock \emph{Journal of Mathematical Physics}, 56:082201, 2015.
+\newblock arXiv:1501.04944.
+
+\bibitem{BonesteelHormoziZikosSimon2005}
+N. E. Bonesteel, L. Hormozi, G. Zikos, and S. H. Simon.
+\newblock Braid topologies for quantum computation.
+\newblock \emph{Physical Review Letters}, 95:140503, 2005.
+
+\bibitem{HormoziZikosBonesteelSimon2007}
+L. Hormozi, G. Zikos, N. E. Bonesteel, and S. H. Simon.
+\newblock Topological quantum compiling.
+\newblock \emph{Physical Review B}, 75:165310, 2007.
+
+\bibitem{Kitaev2003}
+A. Kitaev.
+\newblock Fault-tolerant quantum computation by anyons.
+\newblock \emph{Annals of Physics}, 303(1):2--30, 2003.
+
+\bibitem{PreskillNotes}
+J. Preskill.
+\newblock \emph{Lecture Notes on Topological Quantum Computation}.
+\newblock Lecture notes.
+
+\bibitem{FLW}
+M. H. Freedman, A. Kitaev, M. J. Larsen, and Z. Wang.
+\newblock Topological quantum computation.
+\newblock \emph{Bulletin of the American Mathematical Society}, 40:31--38, 2003.
+
+\bibitem{WangBook}
+Z. Wang.
+\newblock \emph{Topological Quantum Computation}.
+\newblock CBMS Regional Conference Series in Mathematics, 2010.
+
+\end{thebibliography}
+
+\end{document}
