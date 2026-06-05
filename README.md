@@ -34,6 +34,19 @@ pdflatex 06_phase_before_frequencies_golden_decagonal_fourier.tex
 
 ---
 
+## Applied papers
+
+The [`applied/`](applied/) directory holds companion notes that apply the shadow framework outside the core φ-native series:
+
+| File | Title |
+|------|-------|
+| [`applied/weight_shadows.tex`](applied/weight_shadows.tex) | *Weight Shadows* — quotienting transformer parameter space by native symmetries |
+| [`applied/phase_shadows_fibonacci_anyon_compilation.tex`](applied/phase_shadows_fibonacci_anyon_compilation.tex) | *Phase Shadows for Fibonacci Anyon Compilation* — phase-ring compilation for topological circuits |
+
+These are standalone drafts; they reuse core vocabulary where it fits but do not assume the full six-paper arc. See [`applied/README.md`](applied/README.md) for summaries and build notes.
+
+---
+
 ## For LLM / agent consumers
 
 ### What this framework is for
