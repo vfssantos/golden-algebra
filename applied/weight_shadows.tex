@@ -1,0 +1,514 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm,mathtools}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{enumitem}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{microtype}
+\usepackage{caption}
+\usepackage{subcaption}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue!60!black,
+  citecolor=blue!60!black,
+  urlcolor=blue!60!black
+}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{proposition}{Proposition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{definition}{Definition}
+\newtheorem{remark}{Remark}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\Tr}{\operatorname{Tr}}
+\newcommand{\diag}{\operatorname{diag}}
+\newcommand{\eig}{\operatorname{eig}}
+\newcommand{\vecop}{\operatorname{vec}}
+\newcommand{\relu}{\operatorname{ReLU}}
+\newcommand{\Sym}{\mathfrak{S}}
+\newcommand{\MLP}{\mathrm{MLP}}
+\newcommand{\Spec}{\mathcal{S}_{\mathrm{spec}}}
+\newcommand{\TraceShadow}{\mathcal{T}}
+\newcommand{\Canon}{\mathcal{C}}
+\newcommand{\Had}{\odot}
+
+\title{\vspace{-1.5em}\textbf{Weight Shadows: Quotienting Transformer Parameter Space by Native Symmetries}}
+\author{Vinicius Santos}
+\date{Exploratory draft, \today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Neural networks are usually compared as points in weight space. But weight space contains exact algebraic redundancies: permuting hidden units, positively rescaling ReLU channels, or reordering attention heads can move a model far in Euclidean parameter distance while leaving the computed function unchanged. This note introduces \emph{weight shadows}: algebraic invariants of transformer blocks that descend from parameter representatives to symmetry orbits. For an MLP sublayer $x\mapsto F_2\relu(F_1x)$, we attach the coupling matrix
+\[
+G=(F_1F_1^T)\Had(F_2^TF_2),
+\]
+whose entries pair incoming and outgoing hidden-unit interactions. The native invariant is the trace-power shadow $(\Tr G,\Tr G^2,\ldots)$; the sorted eigenvalue multiset is its stable spectral readout. This trace/spectral shadow is sound under hidden-unit permutation and positive ReLU scaling, but incomplete because it is blind to the difference between permutation conjugacy and general orthogonal similarity. We then introduce a stronger Level-4 canonical coupling shadow that retains node-localized cross-terms and recovers a generic canonical form for the coupling graph. On trained microGPT blocks, raw weight distance ranks function-identical symmetry copies as farther from the original than real continued-training fine-tunes, while the shadow ranks them correctly. A model-merging test further marks the scope boundary: canonical shadows identify orbits, but do not by themselves transport between distinct orbits. The result is a concrete transformer-domain instance of the broader principle: do not compare representatives when the native object is an orbit; compare the shadow that descends to the quotient.
+\end{abstract}
+
+\paragraph{Keywords.} transformer blocks, neural network symmetries, weight space, quotient invariants, graph canonization, checkpoint deduplication, shadow algebra.
+
+\section{The paradox: same function, farther weights}
+
+Suppose two transformer blocks compute the same function. Not approximately the same. Exactly the same, up to floating-point roundoff. One block is obtained from the other by merely reordering hidden units and compensating the corresponding output columns. Another block is obtained by continuing training for a few optimization steps, so its function genuinely changes. Which block should be closer to the original?
+
+Euclidean weight distance gives the wrong answer. In our microGPT experiment, a symmetry copy of a trained block sits at weight distance about $7.1$ from the original while its block function is unchanged. Real fine-tunes sit at weight distance about $1.1$--$1.2$ while the function changes substantially. Raw parameter distance therefore ranks an identical function as farther away than a changed function.
+
+This is not a numerical oddity. It is a category error. Weight distance compares \emph{representatives}. The block function is constant on a \emph{symmetry orbit}. When the meaningful object lives on a quotient, the first task is not to find a better norm on representatives. It is to construct an invariant that descends to the quotient.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.98\linewidth]{figures/sweep_result.png}
+  \caption{The basic pathology and the shadow correction. Left: a function-identical symmetry copy can be far in raw weight distance, while perturbations and real fine-tunes can be much nearer in weight space despite changing the function. Right: in the weight-shadow plane, the symmetry copy collapses to the same-function band while real fine-tunes separate.}
+  \label{fig:paradox}
+\end{figure}
+
+The figure is the whole motivation. The star is a symmetry copy: far in weights, zero in function distance. The orange squares are real continued-training fine-tunes: near in weights, changed in function and shadow. The plot says what the algebra will formalize:
+\[
+\text{weights are representatives;}\qquad \text{functions live on quotients;}\qquad \text{shadows measure the quotient.}
+\]
+
+\section{From phase shadows to weight shadows}
+
+The construction follows a pattern from the phase-shadow program. In the Fibonacci anyon setting, braid matrices carry a nuisance symmetry: global phase. The meaningful matrix is not a representative $M$ but its projective class $\lambda M$. A phase-correlation shadow removes that nuisance by using products of the form $M_a\overline{M_b}$ rather than comparing entries directly.
+
+Transformer blocks have a different nuisance group. For an MLP sublayer, hidden units can be permuted. For ReLU networks, hidden units can also be positively rescaled: multiply an incoming row by $a>0$ and divide the corresponding outgoing column by $a$. For multi-head attention, heads can be reordered when the output projection is reordered accordingly. These transformations move the parameter tensor, but they do not change the represented function.
+
+Thus the transfer is direct:
+\[
+\begin{array}{ccc}
+\text{anyon matrices} & \longrightarrow & \text{transformer weights}\\[2pt]
+\text{global phase} & \longrightarrow & \text{permutation and scaling gauges}\\[2pt]
+\text{phase-correlation shadow} & \longrightarrow & \text{weight-coupling shadow}.
+\end{array}
+\]
+
+The goal is not to make neural networks ``golden'' by decoration. The goal is to use the same native algebraic discipline: identify the primitive nuisance symmetry, build the coupling that cancels it, and only then measure distance.
+
+\section{The native symmetry group of a ReLU MLP block}
+
+Consider a one-hidden-layer ReLU sublayer
+\begin{equation}
+  f_{F_1,F_2}(x)=F_2\relu(F_1x),
+  \label{eq:mlp}
+\end{equation}
+where $F_1\in\R^{H\times d}$ and $F_2\in\R^{d'\times H}$. Write
+\[
+ r_i=F_1[i,:]\in\R^d,\qquad c_i=F_2[:,i]\in\R^{d'}.
+\]
+The contribution of hidden unit $i$ is $c_i\relu(r_ix)$.
+
+There are two exact symmetries.
+
+\paragraph{Permutation.} For any permutation matrix $P\in\R^{H\times H}$,
+\[
+F_1' = PF_1,\qquad F_2'=F_2P^T
+\]
+gives
+\[
+F_2'\relu(F_1'x)=F_2P^T\relu(PF_1x)=F_2P^TP\relu(F_1x)=F_2\relu(F_1x).
+\]
+
+\paragraph{Positive ReLU scaling.} For any positive diagonal matrix $D=\diag(a_1,\ldots,a_H)$ with $a_i>0$,
+\[
+F_1'=DF_1,\qquad F_2'=F_2D^{-1}
+\]
+gives
+\[
+F_2'\relu(F_1'x)=F_2D^{-1}\relu(DF_1x)=F_2D^{-1}D\relu(F_1x)=F_2\relu(F_1x).
+\]
+
+Together these generate the MLP gauge group
+\begin{equation}
+  \Gamma_{\MLP}=(\R_{>0})^H\rtimes \Sym_H.
+  \label{eq:gauge-group}
+\end{equation}
+The weights $(F_1,F_2)$ are representatives. The function $f_{F_1,F_2}$ is constant on $\Gamma_{\MLP}$-orbits.
+
+\section{The coupling matrix}
+
+A single hidden-unit descriptor $(r_i,c_i)$ is not invariant under positive scaling. But the pairwise incoming-outgoing coupling
+\begin{equation}
+  G_{ij}=\langle r_i,r_j\rangle\,\langle c_i,c_j\rangle
+  \label{eq:coupling-entry}
+\end{equation}
+is invariant under that scaling. In matrix form,
+\begin{equation}
+  G=(F_1F_1^T)\Had(F_2^TF_2),
+  \label{eq:coupling}
+\end{equation}
+where $\Had$ denotes the Hadamard product.
+
+\begin{proposition}[Scaling cancellation]
+The coupling matrix $G$ is invariant under positive ReLU rescaling of hidden units.
+\end{proposition}
+
+\begin{proof}
+Under $r_i\mapsto a_ir_i$ and $c_i\mapsto a_i^{-1}c_i$,
+\[
+\langle r_i,r_j\rangle\mapsto a_ia_j\langle r_i,r_j\rangle,
+\]
+while
+\[
+\langle c_i,c_j\rangle\mapsto a_i^{-1}a_j^{-1}\langle c_i,c_j\rangle.
+\]
+The factors cancel in the product \eqref{eq:coupling-entry}, so every entry $G_{ij}$ is unchanged.
+\end{proof}
+
+\begin{proposition}[Permutation equivariance]
+Under hidden-unit permutation $F_1\mapsto PF_1$, $F_2\mapsto F_2P^T$, the coupling matrix transforms as
+\[
+G\mapsto PGP^T.
+\]
+\end{proposition}
+
+\begin{proof}
+The incoming Gram matrix transforms as $F_1F_1^T\mapsto P(F_1F_1^T)P^T$, and the outgoing Gram matrix transforms as $F_2^TF_2\mapsto P(F_2^TF_2)P^T$. Their Hadamard product is therefore $P[(F_1F_1^T)\Had(F_2^TF_2)]P^T$.
+\end{proof}
+
+Thus $G$ has already done the first quotient step. It cancels the continuous scaling gauge exactly and leaves only a finite relabeling ambiguity.
+
+\section{The trace shadow and its spectral readout}
+
+The coupling matrix $G$ is scaling-invariant and permutation-equivariant. To remove the remaining hidden-unit ordering, we take conjugation-invariant signatures.
+
+The framework-native choice is the sequence of trace powers:
+\begin{equation}
+  \TraceShadow(G)=\bigl(\Tr(G),\Tr(G^2),\ldots,\Tr(G^H)\bigr).
+  \label{eq:trace-shadow}
+\end{equation}
+We call this the \emph{trace shadow}.
+
+This definition uses multiplication, addition, and trace. It does not require diagonalization, eigenvectors, roots, or a spectral completion. Expanding the $k$th component gives
+\begin{equation}
+\Tr(G^k)=\sum_{i_1,\ldots,i_k}G_{i_1i_2}G_{i_2i_3}\cdots G_{i_ki_1}.
+\label{eq:closed-walks}
+\end{equation}
+So the trace shadow measures closed cycles in the hidden-unit coupling graph. It does not name the hidden units. It counts the interaction cycles that survive the quotient by permutation.
+
+\begin{theorem}[Soundness of the trace shadow]
+If two MLP blocks are related by hidden-unit permutation and positive ReLU scaling, then they have the same trace shadow.
+\end{theorem}
+
+\begin{proof}
+Positive scaling leaves $G$ unchanged. A hidden-unit permutation sends $G$ to $PGP^T$. For every $k\ge 1$,
+\[
+\Tr\bigl((PGP^T)^k\bigr)=\Tr(PG^kP^T)=\Tr(G^k).
+\]
+Therefore all trace powers agree.
+\end{proof}
+
+For numerical comparison, however, raw trace powers are poorly conditioned. The higher powers $\Tr(G^k)$ can span many orders of magnitude, and direct Euclidean comparison of trace vectors becomes dominated by the largest powers. The trace shadow is the conceptually native invariant; it is not the best coordinate system for measuring distances.
+
+The computational readout used in the experiments is therefore the sorted spectrum
+\begin{equation}
+  \Spec(G)=\operatorname{sort}(\eig(G)).
+  \label{eq:spectral-shadow}
+\end{equation}
+This is not a different invariant in finite dimension. If $\lambda_1,\ldots,\lambda_H$ are the eigenvalues of $G$, then
+\[
+\Tr(G^k)=\sum_{i=1}^H\lambda_i^k.
+\]
+Conversely, the first $H$ power sums determine the characteristic polynomial by Newton identities, and hence determine the eigenvalue multiset over the spectral completion.
+
+The hierarchy is:
+\[
+G\quad\longrightarrow\quad \bigl(\Tr G,\Tr G^2,\ldots,\Tr G^H\bigr)\quad\longleftrightarrow\quad \operatorname{sort}(\eig(G)).
+\]
+The middle object is the native shadow. The final object is the stable numerical readout.
+
+\section{Why trace/spectral shadows are not complete}
+
+Soundness is not completeness. The trace/spectral shadow descends correctly to the permutation quotient, but it forgets too much: it is invariant under arbitrary similarity, in particular under orthogonal conjugation
+\[
+G\mapsto QGQ^T,
+\]
+while the true hidden-unit symmetry only allows permutation conjugation
+\[
+G\mapsto PGP^T.
+\]
+Since permutation matrices form a strict subset of the orthogonal group, the trace/spectral shadow is blind to distinctions it should keep if the goal is a canonical form for the permutation quotient.
+
+Equivalently, $G$ is a weighted graph on hidden units. The spectrum of a graph is a classic incomplete invariant: cospectral non-isomorphic graphs exist. Our setting is the weighted version of the same phenomenon. The spectrum gives a fast and useful rejection oracle:
+\[
+\Spec(G)\neq\Spec(G')\quad\Longrightarrow\quad G'\neq PGP^T\text{ for all permutations }P.
+\]
+But equal spectrum does not imply permutation equivalence.
+
+This limitation is not a failure of the shadow program. It identifies the next native layer. The diagonal/spectral terms are not enough; the shadow must retain cross-terms tied to the standard hidden-unit basis.
+
+\section{Level 4: the canonical coupling shadow}
+
+The spectral shadow fails because it throws away which neuron is which. A permutation merely relabels the standard basis. A general rotation destroys it. The fix is to retain node-localized information before quotienting by order.
+
+For each hidden unit $i$, define a node signature
+\begin{equation}
+  \nu_i(G)=\left(G_{ii},\;\sum_jG_{ij},\;\sum_jG_{ij}^2\right).
+  \label{eq:node-signature}
+\end{equation}
+These are self-weight, weighted degree, and incident energy. A permutation reorders the signatures. A generic orthogonal rotation changes them.
+
+On the open stratum where the node signatures are pairwise distinct, they define a unique canonical order. Let $\pi_G$ be the order obtained by sorting the signatures lexicographically. The Level-4 canonical coupling shadow is
+\begin{equation}
+  \Canon(G)=\vecop\bigl(G[\pi_G,\pi_G]\bigr).
+  \label{eq:canon-shadow}
+\end{equation}
+
+\begin{theorem}[Generic completeness for coupling-graph permutation]
+Assume $G$ and $G'$ have pairwise distinct node signatures. Then
+\[
+\Canon(G)=\Canon(G')
+\]
+if and only if $G'$ is permutation-conjugate to $G$.
+\end{theorem}
+
+\begin{proof}
+If $G'=PGP^T$, then the node signatures of $G'$ are the permuted node signatures of $G$. Since the signatures are distinct, sorting them recovers the same canonical node order, so the reordered matrices agree.
+
+Conversely, if the canonical reordered matrices agree, then undoing the two sorting permutations gives $G'=PGP^T$ for the corresponding permutation $P$.
+\end{proof}
+
+This is the exact analogue of moving from diagonal data to cross-correlation data in the phase-shadow construction. The spectral shadow keeps only global class functions of $G$. The canonical coupling shadow keeps enough node-localized structure to distinguish a permutation from a rotation on the generic stratum. This is completeness for the coupling graph $G$ modulo permutation, not for the full functional equivalence class of the MLP.
+
+The hard residual is also clear. If signatures tie, then naive sorting is not a canonical form. The general problem becomes weighted graph canonization: choose a canonical representative of $G$ modulo $G\sim PGP^T$. Weisfeiler--Lehman refinement and exact graph-canonization algorithms extend the Level-4 construction to larger strata, but highly symmetric automorphic cases remain the natural hard set. Trained dense weights generically avoid this set; symmetric toy constructions need explicit tie handling.
+
+\section{Attention-head shadows}
+
+The same idea applies to standard concatenated multi-head attention. In the convention used here, each head has its own rows in $W_Q,W_K,W_V$, the head outputs are concatenated, and the corresponding block of columns in $W_O$ maps the concatenation back to the residual stream. Reordering heads together with the matching $W_O$ column blocks preserves the function.
+
+For head $h$, collect the descriptor
+\[
+u_h=\vecop(W_Q^{(h)},W_K^{(h)},W_V^{(h)},W_O^{(h)}).
+\]
+A simple head coupling matrix is
+\[
+H_{ab}=\langle u_a,u_b\rangle.
+\]
+The head trace/spectral shadow is then defined exactly as above. This gives a block shadow by concatenating MLP and head shadows:
+\[
+\mathcal S_{\mathrm{block}}=\mathcal S_{\MLP}\oplus\mathcal S_{\mathrm{head}}.
+\]
+For the experiments below, this simple head shadow is sufficient to test invariance under head permutation. A richer Level-4 head shadow would canonicalize the head coupling matrix in the same way as the MLP coupling matrix.
+
+\section{Experiments}
+
+The experiments use a minimal microGPT-style character model: embedding dimension $16$, block size $16$, four attention heads, an MLP width of $4d$, and trained weights from multiple random seeds. The point is not scale. The point is that every operation is visible: MLP rows and columns, attention heads, residuals, normalizations, and output projections are explicit.
+
+We compare three distances:
+\begin{align*}
+ d_W(\theta,\theta')&=\|\theta-\theta'\|_2,\\
+ d_f(\theta,\theta')&=\max_X\|f_\theta(X)-f_{\theta'}(X)\|_\infty,\\
+ d_{\mathcal S}(\theta,\theta')&=\|\mathcal S(\theta)-\mathcal S(\theta')\|_2.
+\end{align*}
+Here $d_W$ is representative-level weight distance, $d_f$ is block-function distance on held-out random inputs, and $d_{\mathcal S}$ is shadow distance.
+
+\subsection{Soundness under exact symmetries}
+
+Starting from a trained model, we apply MLP permutations, attention-head permutations, and MLP permutation plus positive scaling. These transformations preserve the block function. They also move the raw weights substantially. The shadow collapses them back to the same point.
+
+\begin{table}[h]
+\centering
+\caption{Symmetry transformations preserve function and shadow while moving raw weights. Values are representative outputs from the microGPT block experiment.}
+\label{tab:soundness}
+\begin{tabular}{lccc}
+\toprule
+Transformation & function distance & weight distance & shadow distance\\
+\midrule
+MLP permutation & $\approx 10^{-15}$ & $6.41$ & $8\times 10^{-16}$\\
+Head permutation & $\approx 10^{-15}$ & $5.39$ & $2\times 10^{-15}$\\
+Permutation + scaling & $\approx 10^{-15}$ & $6.92$ & $1\times 10^{-15}$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The result is exactly the soundness theorem in numerical form: the representative moves, the orbit does not.
+
+\subsection{Weight distance can rank functional identity backwards}
+
+The anti-correlation concern is not an artifact of one hand-picked noise scale. We swept perturbation magnitude $\sigma$ and compared each perturbation to a same-function symmetry copy at weight distance about $7.1$.
+
+\begin{table}[h]
+\centering
+\caption{Perturbation sweep. For $\sigma\leq 0.10$, changed models are closer in raw weight distance than a function-identical symmetry copy.}
+\label{tab:sweep}
+\begin{tabular}{cccc}
+\toprule
+$\sigma$ & function distance & weight distance & closer than symmetry copy?\\
+\midrule
+$0.005$ & $0.08$ & $0.28$ & yes\\
+$0.010$ & $0.18$ & $0.56$ & yes\\
+$0.020$ & $0.38$ & $1.11$ & yes\\
+$0.050$ & $0.61$ & $2.76$ & yes\\
+$0.100$ & $1.44$ & $5.51$ & yes\\
+$0.200$ & $4.02$ & $11.05$ & no\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Thus raw weight distance can be anti-correlated with functional identity across a broad range of perturbation magnitudes. It only stops being backwards once the perturbation is large enough to move farther in weights than the symmetry copy.
+
+We then ran real continued-training fine-tunes: $60$ Adam steps from the trained base model on reshuffled data. These are genuine fine-tunes, not Gaussian perturbations. The same pattern holds: fine-tunes move only about $1.1$--$1.2$ in weight distance but change function and shadow; the symmetry copy moves about $7.1$ in weights but has zero function and shadow change. Figure~\ref{fig:paradox} summarizes this outcome.
+
+\subsection{Level-4 canonical shadows fix the spectral blind spot}
+
+The trace/spectral shadow is sound but incomplete. We tested the failure mode directly by taking the real trained model's coupling matrix $G$ and applying a non-permutation orthogonal rotation $QGQ^T$. The spectrum is unchanged, so the spectral shadow is fooled. The Level-4 canonical coupling shadow separates the pair.
+
+\begin{table}[h]
+\centering
+\caption{Level-4 canonical shadow on trained MLP couplings. The canonical shadow preserves soundness and separates a rotated coupling that the spectral shadow cannot distinguish.}
+\label{tab:level4}
+\begin{tabular}{lcc}
+\toprule
+Test & spectral distance & canonical distance\\
+\midrule
+Symmetry copy of model $0$ & $\approx 10^{-16}$ & $1.6\times 10^{-16}$\\
+Minimum separation among $12$ trained models & $0.047$ & $0.49$\\
+Orthogonally rotated real coupling & $6\times 10^{-16}$ & $0.37$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+In trained-like random couplings, distinct refined node signatures occurred in $2000/2000$ trials. A Weisfeiler--Lehman-style refinement was not fooled by the tested rotations in $500/500$ trials. These are not proofs of full graph-canonization completeness. They support the sharper claim: the Level-4 shadow is a generic canonical form for dense trained couplings, with the automorphic/tied-signature case isolated as the residual hard stratum.
+
+\subsection{Identity is not alignment: a merge test that delimits scope}
+
+A natural question is whether the canonical order also solves the harder cross-model problem of aligning two independently trained models for weight averaging. It does not, and the failure is informative. Table~\ref{tab:merge} compares loss barriers after averaging two trained models under no alignment, canonical-shadow alignment, and standard weight-matching rebasining.
+
+\begin{table}[h]
+\centering
+\caption{Mean loss barrier (merge loss minus averaged endpoint loss) over independently trained model pairs. Canonical-shadow alignment barely improves on naive averaging and is far weaker than weight-matching, because it is a within-model invariant, not a cross-model correspondence.}
+\label{tab:merge}
+\begin{tabular}{lc}
+\toprule
+Alignment & mean loss barrier\\
+\midrule
+None (naive average) & $0.207$\\
+Canonical-shadow order & $0.204$\\
+Weight-matching rebasin & $0.185$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Canonical order agrees with the weight-matching permutation on only $1.2\%$ of units, and canonical-matched units have weight correlation $-0.02$ against $+0.29$ for weight-matched units. The shadow is a sound within-model orbit invariant; it is not a cross-model unit correspondence. This boundary is stated as an application limit below.
+
+\section{The shadow hierarchy}
+
+The result is best understood as a hierarchy rather than a single metric.
+
+\begin{center}
+\begin{tabular}{lll}
+\toprule
+Level & Object & Role\\
+\midrule
+0 & Raw weights & representative-level; not invariant\\
+1 & Spectral shadow & sound rejection oracle; incomplete\\
+2 & Trace-power shadow & native form of Level 1\\
+4 & Canonical coupling shadow & generic canonical form for $G/S_H$\\
+4+ & WL-refined canonical shadow & larger-stratum canonicalization\\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The numbering is intentional. Level 1 and Level 2 carry the same finite-dimensional information: eigenvalues are the computational readout of trace powers. Level 4 is a qualitative jump because it retains node-localized cross-terms before quotienting by order. This is the neural analogue of the move from diagonal magnitudes to phase correlations in the anyon setting.
+
+\section{Applications}
+
+\paragraph{Checkpoint deduplication.} If two checkpoints differ only by known gauge symmetries, raw weights can make them look unrelated. Weight shadows collapse these cases.
+
+\paragraph{Fine-tune auditing.} Shadows can measure which blocks changed their coupling structure after continued training, alignment, distillation, or quantization.
+
+\paragraph{Boundary test: model merging requires alignment.} It is tempting to use a Level-4 canonical order to align hidden units before weight averaging. We tested this directly and report a clean negative result, because it sharpens what the shadow is for. Aligning two independently trained microGPT models by canonical order before averaging reduced the loss barrier by only $0.003$ relative to naive averaging, whereas standard weight-matching rebasining reduced it by $0.021$ (about $7\times$ more). The canonical order agreed with the weight-matching permutation on only $1.2\%$ of units (chance level), and canonical-matched units were essentially uncorrelated ($-0.02$) while weight-matched units were clearly correlated ($+0.29$). The explanation is structural, not a tuning issue: the canonical shadow orders units by a \emph{within-model} coupling-graph signature, whereas merging requires a \emph{cross-model} correspondence between functionally matching units. These are different problems---\emph{orbit identity} (one model modulo its symmetry group) versus \emph{orbit alignment} (relating two distinct orbits). The shadow solves the first soundly; the second needs a similarity-based matcher, not an intrinsic canonical label. Merging is therefore a boundary test, not an application of this invariant.
+
+\paragraph{Model libraries and indexing.} Blocks can be indexed by orbit-level fingerprints rather than raw tensors. This could support search over model families, variants, soups, and checkpoints.
+
+\paragraph{Interpretability.} The coupling graph exposes hidden-unit interaction cycles, node signatures, and canonical orderings. These are structural objects, not coordinate artifacts.
+
+\section{Limitations}
+
+\paragraph{The modeled symmetries are explicit.} The invariant is sound for the symmetries built into it: MLP hidden-unit permutation, positive ReLU scaling, and standard head permutation. Other equivalences may exist and require other shadows.
+
+\paragraph{Coupling completeness is not full weight-pair completeness.} The Level-4 canonical shadow is a generic canonical form for the coupling matrix $G$ modulo permutation. It is not claimed to be a complete invariant of the full pair $(F_1,F_2)$ modulo all possible functional equivalences. A stronger full-weight canonical form would retain richer descriptors such as rank-one unit operators $c_i\otimes r_i$ and their cross-correlations.
+
+\paragraph{Tied signatures require canonicalization.} If node signatures tie, naive sorting is not enough. The correct object is weighted graph canonization, possibly with Weisfeiler--Lehman refinement or exact search inside automorphism blocks.
+
+\paragraph{Normalization layers deserve separate treatment.} The isolated ReLU MLP scaling symmetry is exact. Full-network LayerNorm or RMSNorm can interact with scaling in ways that should be measured rather than assumed.
+
+\paragraph{Scale remains open.} The experiments are deliberately small. Larger transformer families, residual stacks, and real checkpoint suites are the natural next tests.
+
+\section{Conclusion}
+
+The central lesson is simple: do not compare weights before quotienting their native symmetries. Transformer parameter space is not a plain Euclidean space of functions. It is a space of representatives with exact algebraic fibers. Raw distance can measure motion inside a fiber and mistake it for functional change.
+
+Weight shadows repair the comparison at the right layer. The trace shadow gives a native class function: signatures before roots, cycles before coordinates. The spectral readout makes that invariant numerically measurable. The Level-4 canonical coupling shadow restores basis-sensitive cross-terms and gives a generic coordinate on the coupling quotient.
+
+The paper's paradox now has an algebraic answer. The symmetry copy is far only as a representative. In the quotient, it is the same point. The fine-tunes are near only as raw tensors. In the shadow, they have moved. That is the point of a shadow: it measures not where the representative went, but what changed after the nuisance symmetry is removed.
+
+\appendix
+
+\section{Implementation sketch}
+
+The MLP coupling shadow is computed by:
+\begin{verbatim}
+Gin  = fc1 @ fc1.T
+Gout = fc2.T @ fc2
+G    = Gin * Gout
+spec = sort(eigvalsh(G))
+\end{verbatim}
+
+The Level-4 canonical coupling shadow is:
+\begin{verbatim}
+sig   = stack([diag(G), G.sum(axis=1), (G**2).sum(axis=1)], axis=1)
+order = lexsort(sig.T[::-1])
+canon = G[order][:, order].ravel()
+\end{verbatim}
+
+For tied signatures, this cheap canonicalization should be replaced by a tie-aware graph-canonization routine or a Weisfeiler--Lehman refinement followed by exact search inside ambiguous blocks.
+
+\section{Experimental files}
+
+The accompanying scripts are organized as follows.
+\begin{itemize}[leftmargin=2em]
+\item \texttt{train.py}: trains the small microGPT models from multiple seeds.
+\item \texttt{experiment.py}: tests symmetry soundness and baseline spectral shadows.
+\item \texttt{sweep.py}: runs perturbation magnitude sweeps and real continued-training fine-tunes.
+\item \texttt{level4.py}: builds Level-4 candidate shadows and tests the cospectral/rotation failure mode.
+\item \texttt{level4\_honest.py}: probes generic completeness and WL refinements.
+\item \texttt{level4\_real.py}: validates Level-4 shadows on trained microGPT weights.
+\end{itemize}
+
+\begin{thebibliography}{9}
+
+\bibitem{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan N. Gomez, Lukasz Kaiser, and Illia Polosukhin.
+\newblock Attention Is All You Need.
+\newblock \emph{Advances in Neural Information Processing Systems}, 2017.
+
+\bibitem{karpathyMicroGPT}
+Andrej Karpathy.
+\newblock \emph{microgpt.py}.
+\newblock Gist: \url{https://gist.github.com/karpathy/8627fe009c40f57531cb18360106ce95}.
+
+\bibitem{ainsworth2023gitrebasin}
+Samuel K. Ainsworth, Jonathan Hayase, and Siddhartha Srinivasa.
+\newblock Git Re-Basin: Merging Models modulo Permutation Symmetries.
+\newblock \emph{International Conference on Learning Representations}, 2023.
+
+\bibitem{entezari2022role}
+Rahim Entezari, Hanie Sedghi, Olga Saukh, and Behnam Neyshabur.
+\newblock The Role of Permutation Invariance in Linear Mode Connectivity of Neural Networks.
+\newblock \emph{International Conference on Learning Representations}, 2022.
+
+\bibitem{weisfeiler1968reduction}
+Boris Weisfeiler and Andrei Leman.
+\newblock The reduction of a graph to canonical form and the algebra which appears therein.
+\newblock 1968.
+
+\end{thebibliography}
+
+\end{document}
